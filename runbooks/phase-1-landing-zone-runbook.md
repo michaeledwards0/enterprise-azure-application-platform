@@ -250,39 +250,39 @@ $env:TFSTATE_SA
 
 Create the backend resource group:
 
-```bash
-az group create \
-  --name "$TFSTATE_RG" \
-  --location "$LOCATION" \
-  --tags \
-    Project="Enterprise-Azure-Application-Platform" \
-    Environment="$ENVIRONMENT" \
-    ManagedBy="Bootstrap-AzureCLI" \
-    Owner="Cloud-Platform-Team" \
-    CostCenter="Platform-Engineering" \
-    DataClassification="Internal" \
+```Powershell
+az group create `
+  --name "$env:TFSTATE_RG" `
+  --location "$env:LOCATION" `
+  --tags `
+    Project="Enterprise-Azure-Application-Platform" `
+    Environment="$env:ENVIRONMENT" `
+    ManagedBy="Bootstrap-AzureCLI" `
+    Owner="Cloud-Platform-Team" `
+    CostCenter="Platform-Engineering" `
+    DataClassification="Internal" `
     Criticality="High"
 ```
 
 Create the storage account:
 
-```bash
-az storage account create \
-  --name "$TFSTATE_SA" \
-  --resource-group "$TFSTATE_RG" \
-  --location "$LOCATION" \
-  --sku Standard_LRS \
-  --kind StorageV2 \
-  --min-tls-version TLS1_2 \
-  --allow-blob-public-access false \
-  --https-only true \
-  --tags \
-    Project="Enterprise-Azure-Application-Platform" \
-    Environment="$ENVIRONMENT" \
-    ManagedBy="Bootstrap-AzureCLI" \
-    Owner="Cloud-Platform-Team" \
-    CostCenter="Platform-Engineering" \
-    DataClassification="Internal" \
+```Powershell
+az storage account create `
+  --name "$env:TFSTATE_SA" `
+  --resource-group "$env:TFSTATE_RG" `
+  --location "$env:LOCATION" `
+  --sku Standard_LRS `
+  --kind StorageV2 `
+  --min-tls-version TLS1_2 `
+  --allow-blob-public-access false `
+  --https-only true `
+  --tags `
+    Project="Enterprise-Azure-Application-Platform" `
+    Environment="$env:ENVIRONMENT" `
+    ManagedBy="Bootstrap-AzureCLI" `
+    Owner="Cloud-Platform-Team" `
+    CostCenter="Platform-Engineering" `
+    DataClassification="Internal" `
     Criticality="High"
 ```
 
