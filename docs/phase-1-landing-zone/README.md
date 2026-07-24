@@ -297,9 +297,9 @@ Using Azure CLI credentials locally and `DefaultAzureCredential` in code makes i
 
 ## Repository Navigation
 
-- **Detailed implementation:** [Workstream 1 Runbook](../../runbooks/phase-1-landing-zone-runbook.md)
-- **Python automation:** [Tag Compliance Reporter](../../automation/tag-compliance/tag_compliance_report.py)
 - **Next workstream:** Workstream 2 — Enterprise Networking
+- **Python automation:** [Tag Compliance Reporter](../../automation/tag-compliance/tag_compliance_report.py)
+- - **Detailed implementation:** [Workstream 1 Runbook](../../runbooks/phase-1-landing-zone-runbook.md)
 - **Project overview:** [Enterprise Azure Application Platform](../../README.md)
 
 ---
