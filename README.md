@@ -159,7 +159,7 @@ These automations use Azure SDK authentication through `DefaultAzureCredential`,
 | Workstream | Focus | Primary Skills | Status |
 |---|---|---|---|
 | [**1**](docs/phase-1-landing-zone/README.md) | [**Enterprise Landing Zone**](docs/phase-1-landing-zone/README.md) | Terraform backend, naming, tagging, resource organization, Python governance automation | In progress |
-| [**2**](docs/phase-2-enterprise-networking-README.md) | [**Enterprise Networking**](phase-2-enterprise-networking-README.md) | Hub-and-spoke VNets, subnets, NSGs, routing, private DNS | Planned |
+| [**2**](docs/phase-2-enterprise-networking/README.md) | [**Enterprise Networking**]phase-2-enterprise-networking/README.md) | Hub-and-spoke VNets, subnets, NSGs, routing, private DNS | Planned |
 | **3** | Identity and Secrets | Managed identity, Azure RBAC, Key Vault, secret delivery | Planned |
 | **4** | Container Platform | Docker, ACR, AKS, node pools, ingress | Planned |
 | **5** | CI/CD Automation | GitHub Actions, OIDC federation, Terraform workflow, application delivery | Planned |
