@@ -1915,8 +1915,9 @@ automation/tag-compliance/reports/azure-tag-compliance-<timestamp>.csv
 List the generated reports:
 
 ```powershell
-Get-ChildItem .
-eports
+Get-ChildItem .\reports
+
+make sure to be in : enterprise-azure-application-platform\automation\tag-compliance
 ```
 
 Open the newest report in Visual Studio Code:
