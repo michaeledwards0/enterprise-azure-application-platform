@@ -25,6 +25,9 @@ You will:
 
 > **Deployment model:** Azure CLI is used only to bootstrap the remote backend. Terraform manages the landing-zone resources after the backend exists.
 
+> **Simple distinction:** The Terraform backend is the resource group, storage account, and container that store Terraform state. The landing zone is the organized Azure foundation that Terraform deploys for the platform.
+
+
 ---
 
 ## Target Resources
@@ -244,13 +247,72 @@ $env:TFSTATE_SA
 
 > Azure Storage account names must be globally unique, 3–24 characters, and use lowercase letters and numbers only.
 
+
+### PowerShell Session Restart Notes
+
+PowerShell variables only exist in the current PowerShell session. If PowerShell is closed and reopened, return to the repository and recreate the variables before continuing.
+
+```powershell
+cd "$HOME\Documents\enterprise-azure-application-platform"
+
+az account show --query "{Name:name,State:state,IsDefault:isDefault}" --output table
+
+$env:ARM_SUBSCRIPTION_ID = az account show --query id -o tsv
+$env:AZURE_SUBSCRIPTION_ID = $env:ARM_SUBSCRIPTION_ID
+
+$env:LOCATION = "southcentralus"
+$env:LOCATION_SHORT = "scus"
+$env:ENVIRONMENT = "dev"
+$env:PROJECT_SHORT = "eaap"
+$env:TFSTATE_RG = "rg-eaap-tfstate-dev"
+$env:TFSTATE_CONTAINER = "tfstate"
+$env:TFSTATE_SA = "<EXISTING_STORAGE_ACCOUNT_NAME>"
+```
+
+Do not generate a new storage-account name after the backend has already been created. Reuse the existing name.
+
+Variables such as `$myPublicIp` and `$policyAssignmentId` also disappear when PowerShell closes. Recreate them only when the related task requires them.
+
+Installed tools, repository files, Git configuration, Terraform files, and the `.venv` folder remain on the computer. Terraform does not need to be activated. The Python virtual environment must be reactivated only when performing Python work.
+
 ---
 
 ## Step 5 — Bootstrap the Terraform Backend
 
-Create the backend resource group:
+The backend is created with Azure CLI because Terraform cannot store state in a backend that does not exist yet.
 
-```Powershell
+The storage account uses this network design:
+
+```text
+Public network access: Enabled
+Firewall default action: Deny
+Approved workstation public IP: Allow
+Anonymous blob access: Disabled
+```
+
+This keeps the storage firewall compliant with a policy that requires traffic to be denied by default while still allowing the engineer's approved public IP.
+
+### 5.1 Create the Backend Resource Group
+
+#### Bash
+
+```bash
+az group create \
+  --name "$TFSTATE_RG" \
+  --location "$LOCATION" \
+  --tags \
+    Project="Enterprise-Azure-Application-Platform" \
+    Environment="$ENVIRONMENT" \
+    ManagedBy="Bootstrap-AzureCLI" \
+    Owner="Cloud-Platform-Team" \
+    CostCenter="Platform-Engineering" \
+    DataClassification="Internal" \
+    Criticality="High"
+```
+
+#### PowerShell
+
+```powershell
 az group create `
   --name "$env:TFSTATE_RG" `
   --location "$env:LOCATION" `
@@ -264,9 +326,35 @@ az group create `
     Criticality="High"
 ```
 
-Create the storage account:
+### 5.2 Create the Storage Account
 
-```Powershell
+#### Bash
+
+```bash
+az storage account create \
+  --name "$TFSTATE_SA" \
+  --resource-group "$TFSTATE_RG" \
+  --location "$LOCATION" \
+  --sku Standard_LRS \
+  --kind StorageV2 \
+  --min-tls-version TLS1_2 \
+  --allow-blob-public-access false \
+  --https-only true \
+  --public-network-access Enabled \
+  --default-action Deny \
+  --tags \
+    Project="Enterprise-Azure-Application-Platform" \
+    Environment="$ENVIRONMENT" \
+    ManagedBy="Bootstrap-AzureCLI" \
+    Owner="Cloud-Platform-Team" \
+    CostCenter="Platform-Engineering" \
+    DataClassification="Internal" \
+    Criticality="High"
+```
+
+#### PowerShell
+
+```powershell
 az storage account create `
   --name "$env:TFSTATE_SA" `
   --resource-group "$env:TFSTATE_RG" `
@@ -276,6 +364,8 @@ az storage account create `
   --min-tls-version TLS1_2 `
   --allow-blob-public-access false `
   --https-only true `
+  --public-network-access Enabled `
+  --default-action Deny `
   --tags `
     Project="Enterprise-Azure-Application-Platform" `
     Environment="$env:ENVIRONMENT" `
@@ -286,59 +376,174 @@ az storage account create `
     Criticality="High"
 ```
 
-Create the private blob container using Microsoft Entra authentication:
+Simple meaning:
 
-```powershell
-az storage container create 
-  --name "$env:TFSTATE_CONTAINER" 
-  --account-name "$env:TFSTATE_SA" 
-  --auth-mode login
-```
+> Create the storage account, deny network traffic by default, and allow access only through approved network rules.
 
-If the container command returns an authorization error, assign yourself **Storage Blob Data Contributor** on the storage account, wait several minutes for role propagation, and rerun the command.
+### 5.3 Allow the Current Workstation Public IP
 
-Retrieve the storage account resource ID:
-
-```powershell
-TFSTATE_SA_ID=$(az storage account show 
-  --name "$env:TFSTATE_SA" 
-  --resource-group "$env:TFSTATE_RG" 
-  --query id -o tsv)
-```
-
-Retrieve your signed-in object ID:
+#### Bash
 
 ```bash
-SIGNED_IN_OBJECT_ID=$(az ad signed-in-user show --query id -o tsv)
+MY_PUBLIC_IP=$(curl -s https://api.ipify.org)
+
+az storage account network-rule add \
+  --account-name "$TFSTATE_SA" \
+  --resource-group "$TFSTATE_RG" \
+  --ip-address "$MY_PUBLIC_IP" \
+  --action Allow
 ```
 
-Assign the blob data role when needed:
+#### PowerShell
 
 ```powershell
-az role assignment create 
-  --assignee-object-id "env:$SIGNED_IN_OBJECT_ID" 
-  --assignee-principal-type User 
-  --role "Storage Blob Data Contributor" 
+$myPublicIp = (Invoke-RestMethod -Uri "https://api.ipify.org").Trim()
+Write-Host $myPublicIp
+
+az storage account network-rule add `
+  --account-name "$env:TFSTATE_SA" `
+  --resource-group "$env:TFSTATE_RG" `
+  --ip-address "$myPublicIp" `
+  --action Allow
+```
+
+Simple meaning:
+
+> Block all public traffic by default, then allow only the engineer's current public IP.
+
+The public IP may change after restarting the router, changing networks, or connecting to a VPN. If it changes, add the new IP rule and remove the old rule after confirming access.
+
+### 5.4 Assign Blob Data Access When Required
+
+Creating Azure resources and reading blob data use different permissions. If container creation returns an authorization error, assign **Storage Blob Data Contributor** to the signed-in user at the storage-account scope.
+
+#### Bash
+
+```bash
+TFSTATE_SA_ID=$(az storage account show \
+  --name "$TFSTATE_SA" \
+  --resource-group "$TFSTATE_RG" \
+  --query id -o tsv)
+
+SIGNED_IN_OBJECT_ID=$(az ad signed-in-user show --query id -o tsv)
+
+az role assignment create \
+  --assignee-object-id "$SIGNED_IN_OBJECT_ID" \
+  --assignee-principal-type User \
+  --role "Storage Blob Data Contributor" \
   --scope "$TFSTATE_SA_ID"
 ```
 
-Wait two to five minutes, then rerun the container creation command.
+#### PowerShell
 
-Validate the backend:
+```powershell
+$tfstateSaId = az storage account show `
+  --name "$env:TFSTATE_SA" `
+  --resource-group "$env:TFSTATE_RG" `
+  --query id `
+  -o tsv
 
-```bash
-az storage account show \
-  --name "$TFSTATE_SA" \
-  --resource-group "$TFSTATE_RG" \
-  --output table
+$signedInObjectId = az ad signed-in-user show --query id -o tsv
+
+az role assignment create `
+  --assignee-object-id "$signedInObjectId" `
+  --assignee-principal-type User `
+  --role "Storage Blob Data Contributor" `
+  --scope "$tfstateSaId"
 ```
 
+Wait two to five minutes for role propagation.
+
+### 5.5 Create the Private Blob Container
+
+#### Bash
+
 ```bash
-az storage container list \
+az storage container create \
+  --name "$TFSTATE_CONTAINER" \
   --account-name "$TFSTATE_SA" \
-  --auth-mode login \
+  --auth-mode login
+```
+
+#### PowerShell
+
+```powershell
+az storage container create `
+  --name "$env:TFSTATE_CONTAINER" `
+  --account-name "$env:TFSTATE_SA" `
+  --auth-mode login
+```
+
+### 5.6 Validate the Storage Account
+
+#### PowerShell
+
+Keep the JMESPath query on one line inside quotation marks.
+
+```powershell
+az storage account show `
+  --name "$env:TFSTATE_SA" `
+  --resource-group "$env:TFSTATE_RG" `
+  --query "{Name:name,ProvisioningState:provisioningState,PublicNetworkAccess:publicNetworkAccess,DefaultAction:networkRuleSet.defaultAction,HttpsOnly:enableHttpsTrafficOnly,MinimumTLS:minimumTlsVersion,BlobPublicAccess:allowBlobPublicAccess}" `
   --output table
 ```
+
+Expected values:
+
+```text
+ProvisioningState     Succeeded
+PublicNetworkAccess   Enabled
+DefaultAction         Deny
+HttpsOnly             True
+MinimumTLS            TLS1_2
+BlobPublicAccess      False
+```
+
+### 5.7 Validate the Network Rule
+
+```powershell
+az storage account network-rule list `
+  --account-name "$env:TFSTATE_SA" `
+  --resource-group "$env:TFSTATE_RG" `
+  --query "ipRules[].{IPAddress:ipAddressOrRange,Action:action}" `
+  --output table
+```
+
+Confirm the firewall default action:
+
+```powershell
+az storage account network-rule list `
+  --account-name "$env:TFSTATE_SA" `
+  --resource-group "$env:TFSTATE_RG" `
+  --query "defaultAction" `
+  --output tsv
+```
+
+Expected:
+
+```text
+Deny
+```
+
+### 5.8 Validate the Container
+
+```powershell
+az storage container list `
+  --account-name "$env:TFSTATE_SA" `
+  --auth-mode login `
+  --query "[].{Name:name,PublicAccess:properties.publicAccess}" `
+  --output table
+```
+
+Expected:
+
+```text
+Name      PublicAccess
+--------  ------------
+tfstate   None
+```
+
+> A management-group policy named **Deny Public Storage Accounts — MG Level** was satisfied by setting the firewall default action to `Deny` and allowing only the workstation IP. No additional policy exemption was required for that assignment.
 
 ---
 
@@ -693,6 +898,31 @@ Confirm that the state key exists:
 eaap/dev/landing-zone.tfstate
 ```
 
+Verify the exact blob directly.
+
+### PowerShell
+
+```powershell
+az storage blob exists `
+  --account-name "$env:TFSTATE_SA" `
+  --container-name "$env:TFSTATE_CONTAINER" `
+  --name "eaap/dev/landing-zone.tfstate" `
+  --auth-mode login `
+  --output table
+```
+
+Expected:
+
+```text
+Exists
+------
+True
+```
+
+Simple meaning:
+
+> Check whether the `tfstate` container contains the blob named `eaap/dev/landing-zone.tfstate`.
+
 Do not download or upload the state file to GitHub.
 
 ---
@@ -701,11 +931,11 @@ Do not download or upload the state file to GitHub.
 
 Inspect one resource group:
 
-```poweshell
-az group show `
-  --name "rg-eaap-platform-dev" `
-  --query "{Name:name, Location:location, Tags:tags}" `
-  -o json
+```bash
+az group show \
+  --name "rg-eaap-platform-dev" \
+  --query "{name:name,location:location,tags:tags}" \
+  --output json
 ```
 
 Confirm the required tags are present:
@@ -1028,6 +1258,8 @@ Push to GitHub after connecting the repository remote.
 - [ ] Correct Azure subscription selected
 - [ ] Backend resource group created
 - [ ] Storage account created with HTTPS-only and TLS 1.2 minimum
+- [ ] Storage firewall default action set to `Deny`
+- [ ] Current workstation public IP added as an `Allow` network rule
 - [ ] Anonymous blob access disabled
 - [ ] Private `tfstate` container created
 - [ ] Terraform initialized against Azure Blob Storage
@@ -1062,6 +1294,80 @@ Then rerun:
 ```bash
 terraform init -reconfigure -backend-config=backend.hcl
 ```
+
+### Storage account creation is denied by policy
+
+Read the policy violation details instead of relying only on the assignment display name.
+
+If the error shows:
+
+```text
+Microsoft.Storage/storageAccounts/networkAcls.defaultAction
+NotEquals
+Deny
+```
+
+the policy requires the storage firewall default action to be `Deny`. Create the storage account with:
+
+```text
+--public-network-access Enabled
+--default-action Deny
+```
+
+Then add the engineer's public IP as an explicit network rule. This satisfies the policy without creating another exemption.
+
+### Storage access fails after changing networks or using a VPN
+
+Retrieve the current public IP:
+
+```powershell
+$myPublicIp = (Invoke-RestMethod -Uri "https://api.ipify.org").Trim()
+Write-Host $myPublicIp
+```
+
+List existing rules:
+
+```powershell
+az storage account network-rule list `
+  --account-name "$env:TFSTATE_SA" `
+  --resource-group "$env:TFSTATE_RG" `
+  --query "ipRules[].{IPAddress:ipAddressOrRange,Action:action}" `
+  --output table
+```
+
+Add the current IP when it is missing:
+
+```powershell
+az storage account network-rule add `
+  --account-name "$env:TFSTATE_SA" `
+  --resource-group "$env:TFSTATE_RG" `
+  --ip-address "$myPublicIp" `
+  --action Allow
+```
+
+### PowerShell displays the `>>` continuation prompt
+
+The `>>` prompt means PowerShell is waiting for the rest of an unfinished command. This is usually caused by an unmatched quotation mark, brace, parenthesis, or a backtick.
+
+Press:
+
+```text
+Ctrl + C
+```
+
+Return to the normal `PS C:\...>` prompt, then rerun the command.
+
+A PowerShell backtick must be the final character on the line. Do not add a space after it.
+
+### Azure CLI reports `invalid jmespath_type value: '{'`
+
+Keep the complete `--query` value on one line inside quotation marks:
+
+```powershell
+--query "{Name:name,ProvisioningState:provisioningState,DefaultAction:networkRuleSet.defaultAction}"
+```
+
+Do not split the object query across multiple lines inside the quotation marks.
 
 ### Storage account name is unavailable
 
@@ -1132,6 +1438,21 @@ terraform force-unlock <LOCK_ID>
 ```
 
 Never force-unlock an active deployment.
+
+
+---
+
+## Execution-Specific Engineering Decision
+
+### Inherited storage policy handled through compliance
+
+**Issue:** Storage-account creation was denied by the management-group assignment **Deny Public Storage Accounts — MG Level**. The detailed policy evaluation showed that `networkAcls.defaultAction` was not set to `Deny`.
+
+**Resolution:** The storage account was recreated with the firewall default action set to `Deny`. A network rule then allowed only the engineer's current public IP.
+
+**Result:** The backend remained reachable from the approved workstation while all other public traffic was denied by default. The environment stayed compliant, and another policy exemption was not required.
+
+A separate exemption should be documented only for a different policy assignment that could not be satisfied through a compliant configuration.
 
 ---
 
