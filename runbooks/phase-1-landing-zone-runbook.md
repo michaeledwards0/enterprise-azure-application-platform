@@ -701,11 +701,11 @@ Do not download or upload the state file to GitHub.
 
 Inspect one resource group:
 
-```bash
-az group show \
-  --name "rg-eaap-platform-dev" \
-  --query "{name:name,location:location,tags:tags}" \
-  --output json
+```poweshell
+az group show `
+  --name "rg-eaap-platform-dev" `
+  --query "{Name:name, Location:location, Tags:tags}" `
+  -o json
 ```
 
 Confirm the required tags are present:
