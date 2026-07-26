@@ -46,29 +46,296 @@ The examples use **South Central US** (`southcentralus`) and the abbreviation `s
 
 ---
 
-## Prerequisites
+## Prerequisites — Install and Connect the Toolchain
 
-Install and verify:
+This project uses several tools together. Each tool has a separate job:
 
-- Git
-- Azure CLI
-- Terraform
-- Python 3.10 or later
-- Visual Studio Code or another code editor
-- An Azure subscription where you have permission to create resource groups, storage accounts, and resources
+```text
+Git and GitHub       Store and track the project files
+Visual Studio Code   Edit the Terraform, Python, and Markdown files
+Azure CLI            Sign in to Azure and select the subscription
+Terraform            Read the .tf files and deploy Azure resources
+Python               Run the tag-compliance automation
+Azure Python SDK     Allow the Python script to query Azure
+```
 
-Run:
+Simple meaning:
 
-```bash
-az version
-terraform version
-python --version
+> Azure CLI provides the Azure login. Terraform and the Python script reuse that login to work with the selected Azure subscription.
+
+### Prerequisite 1 — Open PowerShell as Administrator
+
+Use an elevated PowerShell window for the initial software installation.
+
+Confirm that Windows Package Manager is available:
+
+```powershell
+winget --version
+```
+
+If `winget` is not recognized, install or update **App Installer** from the Microsoft Store.
+
+### Prerequisite 2 — Install Git
+
+Git tracks changes to the repository and communicates with GitHub.
+
+```powershell
+winget install --id Git.Git -e
+```
+
+Close and reopen PowerShell after installation, then verify:
+
+```powershell
 git --version
 ```
 
-### Recommended Terraform Version
+Configure the name and email that Git will attach to commits:
 
-Use a current Terraform 1.x release. The configuration below requires Terraform `>= 1.6.0` and `< 2.0.0`.
+```powershell
+git config --global user.name "<YOUR_NAME>"
+git config --global user.email "<YOUR_GITHUB_EMAIL>"
+```
+
+Verify the configuration:
+
+```powershell
+git config --global --list
+```
+
+Simple meaning:
+
+> Git tracks the files on the computer. GitHub stores a remote copy of the repository.
+
+Git does not need to be reconnected every time PowerShell is reopened. After the repository is cloned or connected to a remote, verify the connection with:
+
+```powershell
+git remote -v
+```
+
+### Prerequisite 3 — Install Visual Studio Code
+
+Visual Studio Code is used to edit the Terraform files, Python script, Markdown documentation, and evidence references.
+
+```powershell
+winget install --id Microsoft.VisualStudioCode -e
+```
+
+Verify:
+
+```powershell
+code --version
+```
+
+Recommended Visual Studio Code extensions:
+
+- HashiCorp Terraform
+- Python
+- PowerShell
+- GitHub Pull Requests and Issues
+
+Open the repository from PowerShell:
+
+```powershell
+code .
+```
+
+Simple meaning:
+
+> Visual Studio Code edits the project files. The integrated PowerShell terminal runs the same Git, Azure CLI, Terraform, and Python commands.
+
+### Prerequisite 4 — Install Azure CLI
+
+Azure CLI signs the engineer into Azure and selects the subscription used by Terraform and Python.
+
+```powershell
+winget install --id Microsoft.AzureCLI -e
+```
+
+Close and reopen PowerShell, then verify:
+
+```powershell
+az version
+```
+
+Sign in:
+
+```powershell
+az login
+```
+
+List subscriptions:
+
+```powershell
+az account list --output table
+```
+
+Select the project subscription:
+
+```powershell
+az account set --subscription "<SUBSCRIPTION_NAME_OR_ID>"
+```
+
+Confirm the selected subscription:
+
+```powershell
+az account show `
+  --query "{Name:name,SubscriptionId:id,State:state,IsDefault:isDefault}" `
+  --output table
+```
+
+Simple meaning:
+
+> `az login` creates the Azure login session. `az account set` tells the other tools which subscription to use.
+
+The Azure CLI login often remains available after PowerShell is closed. Check it with:
+
+```powershell
+az account show --output table
+```
+
+Run `az login` again only when Azure says authentication is required.
+
+### Prerequisite 5 — Install Terraform
+
+Terraform reads the `.tf` files, compares them with the Terraform state and Azure, and deploys the required changes.
+
+```powershell
+winget install --id Hashicorp.Terraform -e
+```
+
+Close and reopen PowerShell, then verify:
+
+```powershell
+terraform version
+```
+
+This runbook requires:
+
+```text
+Terraform >= 1.6.0 and < 2.0.0
+```
+
+Terraform does not have a separate login command.
+
+It communicates with Azure by using:
+
+1. The current Azure CLI login created by `az login`
+2. The subscription selected by `az account set`
+3. The `azurerm` provider configured in the Terraform files
+4. The subscription environment variable created later in Step 3
+
+Simple meaning:
+
+> Azure CLI proves who you are. Terraform uses that identity to deploy resources into Azure.
+
+### Prerequisite 6 — Install Python
+
+Python runs the tag-compliance automation.
+
+Install a supported Python 3 release:
+
+```powershell
+winget install --id Python.Python.3.12 -e
+```
+
+Close and reopen PowerShell, then verify:
+
+```powershell
+python --version
+python -m pip --version
+```
+
+This runbook requires Python 3.10 or later.
+
+Installing Python does **not** connect Python to Azure by itself.
+
+Python connects to Azure later in **Step 14 and Step 15**:
+
+1. Step 14 creates and activates `.venv`.
+2. Step 14 installs the Azure Python packages from `requirements.txt`.
+3. Step 15 runs `tag_compliance_report.py`.
+4. The script imports `DefaultAzureCredential`.
+5. `DefaultAzureCredential` reuses the current Azure CLI login.
+6. The script queries the selected subscription through Azure Resource Graph.
+
+Simple meaning:
+
+> Python is the engine. The Azure Python packages give it Azure capabilities. The Azure CLI login gives it permission to query Azure.
+
+The supplied `requirements.txt` should contain:
+
+```text
+azure-identity>=1.17,<2.0
+azure-mgmt-resourcegraph>=8.0,<9.0
+```
+
+These packages are installed later inside the project virtual environment, not globally.
+
+### Prerequisite 7 — Confirm All Tools Are Available
+
+Run:
+
+```powershell
+git --version
+code --version
+az version
+terraform version
+python --version
+python -m pip --version
+```
+
+All commands must return version information before continuing.
+
+### How the Tools Work Together
+
+```text
+PowerShell
+   |
+   +-- Git ----------------------> tracks repository changes
+   |
+   +-- Visual Studio Code ------> edits project files
+   |
+   +-- Azure CLI ---------------> authenticates to Azure
+   |                                 |
+   |                                 +--> selected subscription
+   |                                          |
+   +-- Terraform -----------------------------+--> deploys Azure resources
+   |                                          |
+   +-- Python + Azure SDK ---------------------+--> audits Azure resource tags
+```
+
+### What Persists After PowerShell Is Closed
+
+These remain installed or saved:
+
+- Git, Azure CLI, Terraform, Python, and Visual Studio Code
+- The cloned repository
+- Terraform and Python files
+- Git remote configuration
+- The `.venv` folder and packages installed inside it
+- Terraform's `.terraform` folder and provider lock file
+
+These must be restored when needed:
+
+- PowerShell environment variables such as `$env:TFSTATE_SA`
+- Normal PowerShell variables such as `$myPublicIp`
+- Python virtual-environment activation
+- Azure authentication only when the existing login has expired
+
+To reactivate the Python virtual environment:
+
+```powershell
+cd "$HOME\Documents\enterprise-azure-application-platform\automation\tag-compliance"
+.\.venv\Scripts\Activate.ps1
+```
+
+The prompt should change to:
+
+```text
+(.venv) PS C:\...
+```
+
+The packages do not need to be reinstalled every time. Activate the existing virtual environment and run the script.
 
 ---
 
