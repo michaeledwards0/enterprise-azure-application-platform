@@ -1,0 +1,7 @@
+location            = "southcentralus"
+environment         = "dev"
+project_name        = "Enterprise-Azure-Application-Platform"
+owner               = "Cloud-Platform-Team"
+cost_center         = "Platform-Engineering"
+data_classification = "Internal"
+criticality         = "Medium"

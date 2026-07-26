@@ -1,0 +1,6 @@
+resource_group_name  = "rg-eaap-tfstate-dev"
+storage_account_name = "REPLACE_WITH_UNIQUE_STORAGE_ACCOUNT_NAME"
+container_name       = "tfstate"
+key                  = "eaap/dev/landing-zone.tfstate"
+use_azuread_auth     = true
+use_cli              = true

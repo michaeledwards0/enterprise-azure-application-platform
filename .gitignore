@@ -1,0 +1,46 @@
+# Terraform working directories
+**/.terraform/*
+
+# Terraform state
+*.tfstate
+*.tfstate.*
+
+# Terraform plan files
+*.tfplan
+*.plan
+
+# Terraform variable and backend files that can contain environment data
+*.tfvars
+!*.tfvars.example
+backend.hcl
+!backend.hcl.example
+
+# Terraform crash and override files
+crash.log
+crash.*.log
+override.tf
+override.tf.json
+*_override.tf
+*_override.tf.json
+
+# Terraform CLI configuration
+.terraformrc
+terraform.rc
+
+# Python
+__pycache__/
+*.py[cod]
+.venv/
+venv/
+.env
+
+# Generated automation reports
+automation/**/reports/*.csv
+automation/**/reports/*.json
+automation/**/reports/*.md
+
+# IDE and operating system files
+.vscode/
+.idea/
+.DS_Store
+Thumbs.db
