@@ -288,10 +288,10 @@ az storage account create `
 
 Create the private blob container using Microsoft Entra authentication:
 
-```bash
-az storage container create \
-  --name "$TFSTATE_CONTAINER" \
-  --account-name "$TFSTATE_SA" \
+```powershell
+az storage container create 
+  --name "$env:TFSTATE_CONTAINER" 
+  --account-name "$env:TFSTATE_SA" 
   --auth-mode login
 ```
 
@@ -299,10 +299,10 @@ If the container command returns an authorization error, assign yourself **Stora
 
 Retrieve the storage account resource ID:
 
-```bash
-TFSTATE_SA_ID=$(az storage account show \
-  --name "$TFSTATE_SA" \
-  --resource-group "$TFSTATE_RG" \
+```powershell
+TFSTATE_SA_ID=$(az storage account show 
+  --name "$env:TFSTATE_SA" 
+  --resource-group "$env:TFSTATE_RG" 
   --query id -o tsv)
 ```
 
@@ -314,11 +314,11 @@ SIGNED_IN_OBJECT_ID=$(az ad signed-in-user show --query id -o tsv)
 
 Assign the blob data role when needed:
 
-```bash
-az role assignment create \
-  --assignee-object-id "$SIGNED_IN_OBJECT_ID" \
-  --assignee-principal-type User \
-  --role "Storage Blob Data Contributor" \
+```powershell
+az role assignment create 
+  --assignee-object-id "env:$SIGNED_IN_OBJECT_ID" 
+  --assignee-principal-type User 
+  --role "Storage Blob Data Contributor" 
   --scope "$TFSTATE_SA_ID"
 ```
 
