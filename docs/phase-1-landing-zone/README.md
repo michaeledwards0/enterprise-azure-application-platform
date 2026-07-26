@@ -210,6 +210,15 @@ The script:
 
 **Resolution:** Used Azure CLI login for Terraform and `DefaultAzureCredential` for Python. The same code can later use GitHub workload identity or managed identity.
 
+### Public Storage Account Creation Denied
+
+**Issue:** An inherited Azure Policy denied storage accounts with public network access. Because the project was executed from a local workstation without private VNet connectivity
+
+**Resolution:** I created a narrowly scoped policy exemption limited to the dedicated Terraform backend resource group. Anonymous blob access remained disabled, HTTPS and TLS 1.2 were enforced, and data-plane access used Microsoft Entra authentication. The planned future-state improvement is to migrate the backend to private endpoint access through an Azure-hosted or self-hosted deployment runner.
+
+
+**Because the project was executed from a local workstation without private VNet connectivity, I created a narrowly scoped policy exemption limited to the dedicated Terraform backend resource group. Anonymous blob access remained disabled, HTTPS and TLS 1.2 were enforced, and data-plane access used Microsoft Entra authentication. The planned future-state improvement is to migrate the backend to private endpoint access through an Azure-hosted or self-hosted deployment runner.
+
 ---
 
 ## Results and Validation
