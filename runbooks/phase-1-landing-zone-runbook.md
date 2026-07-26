@@ -1238,62 +1238,252 @@ A clean plan is important evidence that Terraform state and Azure resources are 
 
 Return to the repository root:
 
-```bash
+```powershell
 cd ../../..
 ```
 
-Move into the automation folder:
+Move into the tag-compliance automation folder:
 
-```bash
-cd automation/tag-compliance
+```powershell
+cd .\automation\tag-compliance
 ```
 
-Create a virtual environment:
+Simple meaning:
 
-```bash
+> Move PowerShell into the folder that will contain the Python environment, package list, script, and generated reports.
+
+Create a project-specific Python virtual environment:
+
+```powershell
 python -m venv .venv
 ```
 
-Activate it.
-
-### Bash
-
-```bash
-source .venv/bin/activate
-```
-
-### PowerShell
+Activate it:
 
 ```powershell
 .\.venv\Scripts\Activate.ps1
 ```
 
-Upgrade pip and install dependencies:
+The PowerShell prompt should now begin with:
 
-```bash
+```text
+(.venv)
+```
+
+Example:
+
+```text
+(.venv) PS C:\Users\<username>\Documents\enterprise-azure-application-platform\automation\tag-compliance>
+```
+
+Simple meaning:
+
+> Create and activate a private Python environment for this project so its packages remain separate from other Python projects.
+
+The `.venv` folder only needs to be created once.
+
+After reopening PowerShell, reactivate it with:
+
+```powershell
+cd "$HOME\Documents\enterprise-azure-application-platform\automation\tag-compliance"
+
+.\.venv\Scripts\Activate.ps1
+```
+
+The packages do not need to be reinstalled every time the virtual environment is activated.
+
+The `requirements.txt` file is a list of the Python packages required by the tag-compliance script.
+
+It is not automatically created by Python or Azure. The developer creates it based on the libraries imported by the Python script.
+
+Create the file:
+
+```powershell
+New-Item `
+  -ItemType File `
+  -Name "requirements.txt" `
+  -Force
+```
+
+Open it in Visual Studio Code:
+
+```powershell
+code .\requirements.txt
+```
+
+Paste the following package requirements into the file:
+
+```text
+azure-identity>=1.17,<2.0
+azure-mgmt-resourcegraph>=8.0,<9.0
+```
+
+Save the file with:
+
+```text
+Ctrl + S
+```
+
+The completed file should be located at:
+
+```text
+automation/tag-compliance/requirements.txt
+```
+
+Simple meaning:
+
+> `requirements.txt` is the project's Python package list. It tells `pip` which Azure libraries must be installed.
+
+The packages serve these purposes:
+
+```text
+azure-identity
+```
+
+> Allows the Python script to obtain an Azure credential, including reusing the current Azure CLI login.
+
+```text
+azure-mgmt-resourcegraph
+```
+
+> Allows the Python script to query Azure Resource Graph for resources, resource groups, and tags.
+
+Upgrade pip:
+
+```powershell
 python -m pip install --upgrade pip
-pip install -r requirements.txt
 ```
 
-Confirm authentication is still valid:
+Simple meaning:
 
-```bash
-az account show --output table
+> Update the tool Python uses to install packages.
+
+Install everything listed in `requirements.txt`:
+
+```powershell
+python -m pip install -r .\requirements.txt
 ```
 
-Set the subscription environment variable if the shell was restarted.
+Simple meaning:
 
-### Bash
+> Read the package names inside `requirements.txt` and install them into the active `.venv` environment.
 
-```bash
-export AZURE_SUBSCRIPTION_ID=$(az account show --query id -o tsv)
+The packages are installed inside:
+
+```text
+automation/tag-compliance/.venv
 ```
 
-### PowerShell
+They are not installed directly into the repository files and are not committed to GitHub.
+
+Confirm the packages were installed:
+
+```powershell
+python -m pip list | Select-String "azure"
+```
+
+Confirm the identity package:
+
+```powershell
+python -m pip show azure-identity
+```
+
+Confirm the Resource Graph package:
+
+```powershell
+python -m pip show azure-mgmt-resourcegraph
+```
+
+These checks are mainly for initial setup and troubleshooting. They do not need to be run every time PowerShell is reopened.
+
+Check that the Azure CLI login is still valid:
+
+```powershell
+az account show `
+  --query "{Name:name,SubscriptionId:id,State:state,IsDefault:isDefault}" `
+  --output table
+```
+
+If Azure reports that authentication is required, sign in again:
+
+```powershell
+az login
+```
+
+Select the correct subscription when necessary:
+
+```powershell
+az account set --subscription "<SUBSCRIPTION_NAME_OR_ID>"
+```
+
+Simple meaning:
+
+> Azure CLI authenticates the user. The Python script will reuse this Azure login through `DefaultAzureCredential`.
+
+Set the active Azure subscription ID for the current PowerShell session:
 
 ```powershell
 $env:AZURE_SUBSCRIPTION_ID = az account show --query id -o tsv
 ```
+
+Confirm that the variable contains a value:
+
+```powershell
+$env:AZURE_SUBSCRIPTION_ID
+```
+
+Do not include the subscription ID in public screenshots.
+
+This environment variable must be recreated after PowerShell is closed because PowerShell session variables do not persist automatically.
+
+The Python-to-Azure connection happens in this order:
+
+```text
+az login
+   ↓
+Azure CLI stores the authenticated login
+   ↓
+requirements.txt identifies the required Azure Python packages
+   ↓
+pip installs azure-identity and azure-mgmt-resourcegraph
+   ↓
+tag_compliance_report.py imports those packages
+   ↓
+DefaultAzureCredential finds the Azure CLI login
+   ↓
+ResourceGraphClient queries the selected Azure subscription
+```
+
+Simple meaning:
+
+> Python itself does not automatically connect to Azure. The Azure packages give Python the required Azure functions, and `DefaultAzureCredential` reuses the Azure CLI login.
+
+Confirm the automation folder:
+
+```powershell
+Get-ChildItem
+```
+
+Expected items:
+
+```text
+.venv
+reports
+requirements.txt
+tag_compliance_report.py
+```
+
+At this point:
+
+- Python is installed.
+- The project virtual environment is active.
+- The required Azure packages are installed.
+- Azure CLI authentication is available.
+- The subscription environment variable is set.
+- The Python script is ready to be created or run in Step 15.
+
+---
+
 
 ---
 
