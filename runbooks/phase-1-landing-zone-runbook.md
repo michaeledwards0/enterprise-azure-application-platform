@@ -1076,13 +1076,260 @@ Open the file in Visual Studio Code:
 code .	ag_compliance_report.py
 ```
 
-Paste the approved Python tag-compliance script into the file and save it with:
+The file is empty when it is first created. Paste the complete script below into `tag_compliance_report.py`, then save the file with `Ctrl + S`.
 
-```text
-Ctrl + S
+### Complete `tag_compliance_report.py` Script
+
+```python
+#!/usr/bin/env python3
+"""Generate an Azure tag-compliance CSV report with Azure Resource Graph."""
+
+from __future__ import annotations
+
+import argparse
+import csv
+import os
+import subprocess
+import sys
+from datetime import datetime, timezone
+from pathlib import Path
+from typing import Any
+
+from azure.identity import DefaultAzureCredential
+from azure.mgmt.resourcegraph import ResourceGraphClient
+from azure.mgmt.resourcegraph.models import QueryRequest, QueryRequestOptions
+
+
+REQUIRED_TAGS = [
+    "Project",
+    "Environment",
+    "ManagedBy",
+    "Owner",
+    "CostCenter",
+    "DataClassification",
+    "Criticality",
+]
+
+
+def parse_args() -> argparse.Namespace:
+    parser = argparse.ArgumentParser(
+        description="Check Azure resources for the required EAAP tags."
+    )
+    parser.add_argument(
+        "--include-resource-groups",
+        action="store_true",
+        help="Include Azure resource groups in the compliance check.",
+    )
+    parser.add_argument(
+        "--no-fail-on-noncompliance",
+        action="store_true",
+        help="Return exit code 0 even when missing tags are found.",
+    )
+    parser.add_argument(
+        "--subscription-id",
+        help=(
+            "Azure subscription ID. When omitted, the script checks "
+            "AZURE_SUBSCRIPTION_ID, ARM_SUBSCRIPTION_ID, and then Azure CLI."
+        ),
+    )
+    parser.add_argument(
+        "--output-dir",
+        default="reports",
+        help="Directory where the CSV report will be written. Default: reports",
+    )
+    return parser.parse_args()
+
+
+def get_subscription_id(explicit_id: str | None) -> str:
+    candidates = [
+        explicit_id,
+        os.getenv("AZURE_SUBSCRIPTION_ID"),
+        os.getenv("ARM_SUBSCRIPTION_ID"),
+    ]
+
+    for candidate in candidates:
+        if candidate and candidate.strip():
+            return candidate.strip()
+
+    try:
+        result = subprocess.run(
+            ["az", "account", "show", "--query", "id", "-o", "tsv"],
+            check=True,
+            capture_output=True,
+            text=True,
+        )
+        subscription_id = result.stdout.strip()
+        if subscription_id:
+            return subscription_id
+    except (FileNotFoundError, subprocess.CalledProcessError) as exc:
+        raise RuntimeError(
+            "Could not determine the Azure subscription ID. "
+            "Run 'az login' and select a subscription, or set "
+            "AZURE_SUBSCRIPTION_ID."
+        ) from exc
+
+    raise RuntimeError("The Azure subscription ID could not be determined.")
+
+
+def build_query(include_resource_groups: bool) -> str:
+    resource_query = """
+Resources
+| project id, name, type, location, resourceGroup, subscriptionId, tags
+"""
+
+    if not include_resource_groups:
+        return resource_query.strip()
+
+    return """
+union
+(
+    Resources
+    | project id, name, type, location, resourceGroup, subscriptionId, tags
+),
+(
+    ResourceContainers
+    | where type =~ "microsoft.resources/subscriptions/resourcegroups"
+    | project
+        id,
+        name,
+        type,
+        location,
+        resourceGroup = name,
+        subscriptionId,
+        tags
+)
+| order by type asc, name asc
+""".strip()
+
+
+def normalize_tags(tags: Any) -> dict[str, str]:
+    if not isinstance(tags, dict):
+        return {}
+
+    normalized: dict[str, str] = {}
+    for key, value in tags.items():
+        normalized[str(key).casefold()] = "" if value is None else str(value).strip()
+    return normalized
+
+
+def evaluate_resource(resource: dict[str, Any]) -> dict[str, Any]:
+    tags = normalize_tags(resource.get("tags"))
+    missing_tags = [
+        required
+        for required in REQUIRED_TAGS
+        if not tags.get(required.casefold())
+    ]
+
+    return {
+        "subscription_id": resource.get("subscriptionId", ""),
+        "resource_group": resource.get("resourceGroup", ""),
+        "resource_name": resource.get("name", ""),
+        "resource_type": resource.get("type", ""),
+        "location": resource.get("location", ""),
+        "resource_id": resource.get("id", ""),
+        "compliance_status": "Compliant" if not missing_tags else "Noncompliant",
+        "missing_tags": "; ".join(missing_tags),
+        **{
+            f"tag_{required}": tags.get(required.casefold(), "")
+            for required in REQUIRED_TAGS
+        },
+    }
+
+
+def query_resources(subscription_id: str, include_resource_groups: bool) -> list[dict[str, Any]]:
+    credential = DefaultAzureCredential()
+    client = ResourceGraphClient(credential)
+
+    try:
+        request = QueryRequest(
+            subscriptions=[subscription_id],
+            query=build_query(include_resource_groups),
+            options=QueryRequestOptions(
+                result_format="objectArray",
+                top=1000,
+            ),
+        )
+        response = client.resources(request)
+        return list(response.data or [])
+    finally:
+        client.close()
+        credential.close()
+
+
+def write_csv(rows: list[dict[str, Any]], output_dir: str) -> Path:
+    report_dir = Path(output_dir)
+    report_dir.mkdir(parents=True, exist_ok=True)
+
+    timestamp = datetime.now(timezone.utc).strftime("%Y%m%dT%H%M%SZ")
+    report_path = report_dir / f"azure-tag-compliance-{timestamp}.csv"
+
+    fieldnames = [
+        "subscription_id",
+        "resource_group",
+        "resource_name",
+        "resource_type",
+        "location",
+        "resource_id",
+        "compliance_status",
+        "missing_tags",
+        *[f"tag_{tag}" for tag in REQUIRED_TAGS],
+    ]
+
+    with report_path.open("w", newline="", encoding="utf-8-sig") as csv_file:
+        writer = csv.DictWriter(csv_file, fieldnames=fieldnames)
+        writer.writeheader()
+        writer.writerows(rows)
+
+    return report_path.resolve()
+
+
+def print_summary(rows: list[dict[str, Any]], report_path: Path) -> None:
+    total = len(rows)
+    compliant = sum(row["compliance_status"] == "Compliant" for row in rows)
+    noncompliant = total - compliant
+    compliance_rate = (compliant / total * 100) if total else 100.0
+
+    print()
+    print("Azure Tag Compliance Summary")
+    print("============================")
+    print(f"Resources evaluated : {total}")
+    print(f"Compliant resources : {compliant}")
+    print(f"Noncompliant        : {noncompliant}")
+    print(f"Compliance rate     : {compliance_rate:.2f}%")
+    print(f"CSV report          : {report_path}")
+
+
+def main() -> int:
+    args = parse_args()
+
+    try:
+        subscription_id = get_subscription_id(args.subscription_id)
+        resources = query_resources(
+            subscription_id=subscription_id,
+            include_resource_groups=args.include_resource_groups,
+        )
+        rows = [evaluate_resource(resource) for resource in resources]
+        report_path = write_csv(rows, args.output_dir)
+        print_summary(rows, report_path)
+    except Exception as exc:
+        print(f"ERROR: {exc}", file=sys.stderr)
+        return 1
+
+    has_noncompliance = any(
+        row["compliance_status"] == "Noncompliant" for row in rows
+    )
+
+    if has_noncompliance and not args.no_fail_on_noncompliance:
+        return 2
+
+    return 0
+
+
+if __name__ == "__main__":
+    raise SystemExit(main())
 ```
 
-Another valid method is to copy the completed script directly into:
+Another valid method is to save the completed script directly at:
 
 ```text
 automation/tag-compliance/tag_compliance_report.py
@@ -1090,7 +1337,8 @@ automation/tag-compliance/tag_compliance_report.py
 
 Simple meaning:
 
-> Installing Python prepares the computer to run Python code. Creating `tag_compliance_report.py` adds the actual automation code that checks Azure tags and creates the CSV report.
+> Installing Python prepares the computer to run Python code. Creating the file gives the script a location. Pasting the code into the file adds the automation that checks Azure tags and creates the CSV report.
+
 
 ### 15.3 Validate the Script Before Running It
 
