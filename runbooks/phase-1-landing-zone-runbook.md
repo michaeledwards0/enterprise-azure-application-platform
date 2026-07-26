@@ -1915,15 +1915,15 @@ automation/tag-compliance/reports/azure-tag-compliance-<timestamp>.csv
 List the generated reports:
 
 ```powershell
-Get-ChildItem .
-eports
+Get-ChildItem .\reports
+
+make sure to be in : enterprise-azure-application-platform\automation\tag-compliance
 ```
 
 Open the newest report in Visual Studio Code:
 
 ```powershell
-$latestReport = Get-ChildItem .
-eports zure-tag-compliance-*.csv |
+$latestReport = Get-ChildItem .\reports\azure-tag-compliance-*.csv |
   Sort-Object LastWriteTime -Descending |
   Select-Object -First 1
 
