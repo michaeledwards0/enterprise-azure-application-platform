@@ -512,11 +512,11 @@ az storage account network-rule list `
 Confirm the firewall default action:
 
 ```powershell
-az storage account network-rule list `
-  --account-name "$env:TFSTATE_SA" `
+az storage account show `
+  --name "$env:TFSTATE_SA" `
   --resource-group "$env:TFSTATE_RG" `
-  --query "defaultAction" `
-  --output tsv
+  --query "{PublicNetworkAccess:publicNetworkAccess, DefaultAction:networkRuleSet.defaultAction}" `
+  --output table
 ```
 
 Expected:
@@ -857,10 +857,9 @@ terraform output
 
 List the deployed resource groups:
 
-```bash
-az group list \
-  --query "[?starts_with(name, 'rg-eaap-')].[name,location,tags.ManagedBy,tags.Environment]" \
-  --output table
+```powershell
+az group list --query "[?starts_with(name, 'rg-eaap-')].[name,location,tags.ManagedBy,tags.Environment]" --output table
+
 ```
 
 ---
@@ -931,11 +930,9 @@ Do not download or upload the state file to GitHub.
 
 Inspect one resource group:
 
-```bash
-az group show \
-  --name "rg-eaap-platform-dev" \
-  --query "{name:name,location:location,tags:tags}" \
-  --output json
+```powershell
+az group show --name "rg-eaap-platform-dev" --query "{Name:name,Location:location,Tags:tags}" --output json
+
 ```
 
 Confirm the required tags are present:
@@ -1033,15 +1030,130 @@ $env:AZURE_SUBSCRIPTION_ID = az account show --query id -o tsv
 
 ---
 
-## Step 15 — Run the Python Tag-Compliance Report
+## Step 15 — Create and Run the Python Tag-Compliance Report
 
-Run the script:
+The Python packages installed in Step 14 provide the Azure libraries. The actual automation script must also exist in the repository before it can be run.
 
-```bash
-python tag_compliance_report.py --include-resource-groups
+### 15.1 Confirm the Automation Directory
+
+From the repository root:
+
+```powershell
+cd . utomation	ag-compliance
 ```
 
-The script evaluates the live subscription against these tags:
+Confirm the expected files and folders:
+
+```powershell
+Get-ChildItem
+```
+
+Expected structure:
+
+```text
+automation/
+└── tag-compliance/
+    ├── .venv/
+    ├── reports/
+    ├── requirements.txt
+    └── tag_compliance_report.py
+```
+
+### 15.2 Create the Script File
+
+If `tag_compliance_report.py` does not already exist, create it:
+
+```powershell
+New-Item `
+  -ItemType File `
+  -Name "tag_compliance_report.py" `
+  -Force
+```
+
+Open the file in Visual Studio Code:
+
+```powershell
+code .	ag_compliance_report.py
+```
+
+Paste the approved Python tag-compliance script into the file and save it with:
+
+```text
+Ctrl + S
+```
+
+Another valid method is to copy the completed script directly into:
+
+```text
+automation/tag-compliance/tag_compliance_report.py
+```
+
+Simple meaning:
+
+> Installing Python prepares the computer to run Python code. Creating `tag_compliance_report.py` adds the actual automation code that checks Azure tags and creates the CSV report.
+
+### 15.3 Validate the Script Before Running It
+
+Check the script for Python syntax errors:
+
+```powershell
+python -m py_compile .	ag_compliance_report.py
+```
+
+Expected result:
+
+```text
+No output
+```
+
+No output means Python successfully validated the script syntax.
+
+The final script runs two separate Azure Resource Graph queries:
+
+- `Resources` for Azure resources
+- `ResourceContainers` for resource groups
+
+The script combines the results in Python. It does not use a single `union` query.
+
+Confirm the old `union` query is not present:
+
+```powershell
+Select-String `
+  -Path .	ag_compliance_report.py `
+  -Pattern "union"
+```
+
+Expected result:
+
+```text
+No output
+```
+
+### 15.4 Confirm Azure Authentication and Subscription
+
+```powershell
+az account show `
+  --query "{Subscription:name,SubscriptionId:id,State:state}" `
+  --output table
+```
+
+If PowerShell was restarted, reset the subscription environment variable:
+
+```powershell
+$env:AZURE_SUBSCRIPTION_ID = az account show --query id -o tsv
+```
+
+### 15.5 Run the Tag-Compliance Report
+
+```powershell
+python .	ag_compliance_report.py --include-resource-groups
+```
+
+Simple meaning:
+
+> Run the Python script and include resource groups in the tag-compliance check.
+
+The script evaluates the active subscription against these tags:
 
 ```text
 Project
@@ -1057,34 +1169,70 @@ Expected terminal behavior:
 
 ```text
 Azure Tag Compliance Summary
-===============================
+============================
 Resources evaluated : <number>
 Compliant resources : <number>
-Noncompliant         : <number>
-Compliance rate      : <percentage>%
-CSV report           : <local path>
+Noncompliant        : <number>
+Compliance rate     : <percentage>%
+CSV report          : <local path>
 ```
 
 The script returns:
 
 - Exit code `0` when all evaluated resources are compliant
-- Exit code `1` when authentication, configuration, or the Resource Graph query fails
-- Exit code `2` when the query succeeds but noncompliant resources are found
+- Exit code `1` when authentication, configuration, or an Azure Resource Graph query fails
+- Exit code `2` when the queries succeed but noncompliant resources are found
 
-A nonzero result caused by missing tags is expected in a shared subscription containing resources from other projects.
+Exit code `2` means the script worked and found resources with missing tags. It does not mean the script failed.
 
-To generate evidence without failing the terminal session on noncompliance:
+A noncompliant result may be expected in a shared subscription containing resources from other projects.
 
-```bash
-python tag_compliance_report.py \
-  --include-resource-groups \
+### 15.6 Generate Evidence Without Failing on Noncompliance
+
+```powershell
+python .	ag_compliance_report.py `
+  --include-resource-groups `
   --no-fail-on-noncompliance
 ```
 
-Open the generated CSV in Excel or Visual Studio Code:
+Simple meaning:
+
+> Generate the report even when missing tags are found, but return a successful terminal exit code.
+
+### 15.7 Review the CSV Report
+
+The script creates a timestamped CSV under:
 
 ```text
 automation/tag-compliance/reports/azure-tag-compliance-<timestamp>.csv
+```
+
+List the generated reports:
+
+```powershell
+Get-ChildItem .
+eports
+```
+
+Open the newest report in Visual Studio Code:
+
+```powershell
+$latestReport = Get-ChildItem .
+eports zure-tag-compliance-*.csv |
+  Sort-Object LastWriteTime -Descending |
+  Select-Object -First 1
+
+code $latestReport.FullName
+```
+
+Review these columns:
+
+```text
+resource_name
+resource_type
+resource_group
+compliance_status
+missing_tags
 ```
 
 Do not commit generated reports unless they have been reviewed for subscription IDs, resource IDs, or other environment details. The repository `.gitignore` excludes them by default.
@@ -1270,6 +1418,8 @@ Push to GitHub after connecting the repository remote.
 - [ ] Terraform state blob exists remotely
 - [ ] Second Terraform plan showed no changes
 - [ ] Python dependencies installed in a virtual environment
+- [ ] `tag_compliance_report.py` created and populated with the approved script
+- [ ] Python syntax validation completed successfully
 - [ ] Python report queried the active subscription
 - [ ] CSV report generated
 - [ ] Screenshots captured and sanitized
@@ -1420,6 +1570,38 @@ python tag_compliance_report.py \
   --subscription-id "<SUBSCRIPTION_ID>" \
   --include-resource-groups
 ```
+
+### Python reports `Failed to resolve table or column expression named 'Resources'`
+
+The script still contains the old Azure Resource Graph `union` query.
+
+Check the file:
+
+```powershell
+Select-String `
+  -Path .\tag_compliance_report.py `
+  -Pattern "union"
+```
+
+The corrected script should return no output because it queries `Resources` and `ResourceContainers` separately and combines the results in Python.
+
+Replace the old script with the approved version, save it, and validate the syntax:
+
+```powershell
+python -m py_compile .\tag_compliance_report.py
+```
+
+### Python reports `unterminated triple-quoted string literal`
+
+A multi-line Python string was edited incorrectly or left without a closing triple quote.
+
+Replace the entire script with the approved version instead of repairing individual lines. Save the file and run:
+
+```powershell
+python -m py_compile .\tag_compliance_report.py
+```
+
+No output means the syntax is valid.
 
 ### Python returns exit code 2
 
