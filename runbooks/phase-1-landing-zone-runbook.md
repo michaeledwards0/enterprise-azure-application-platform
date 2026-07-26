@@ -485,7 +485,7 @@ az storage account show `
   --name "$env:TFSTATE_SA" `
   --resource-group "$env:TFSTATE_RG" `
   --query "{Name:name,ProvisioningState:provisioningState,PublicNetworkAccess:publicNetworkAccess,DefaultAction:networkRuleSet.defaultAction,HttpsOnly:enableHttpsTrafficOnly,MinimumTLS:minimumTlsVersion,BlobPublicAccess:allowBlobPublicAccess}" `
-  --output table
+  --output json
 ```
 
 Expected values:
