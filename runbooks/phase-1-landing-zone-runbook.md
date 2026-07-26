@@ -2345,7 +2345,7 @@ A separate exemption should be documented only for a different policy assignment
 
 ## Cleanup Procedure
 
-Keep the resources if you are continuing to Workstream 2.
+Do not use clean up procedure if you plan on going to the next phase and completing the project. Only Clean up when you are done with the project. 
 
 To remove the Terraform-managed resource groups:
 
