@@ -221,6 +221,8 @@ The script:
 **Issue:** After setting a policy exemption, a Management Group policy denied the creation of the storage account because of a failed condition that required the firewall to use "Default action : Deny." The policy did not require publicNetworkAccess be disabled. 
 
 **Resolution:** I created a network rule to allow traffic from my public ip address. I configured the firewall default action to deny. Then I reated a network rule to allow my public ip address instead of creating another policy exemption. I left Anonymous blob access disabled and the storage account was able to remain compliant. 
+
+
 ---
 
 ## Results and Validation
