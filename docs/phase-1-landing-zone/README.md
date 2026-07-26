@@ -216,9 +216,11 @@ The script:
 
 **Resolution:** I created a narrowly scoped policy exemption limited to the dedicated Terraform backend resource group. Anonymous blob access remained disabled, HTTPS and TLS 1.2 were enforced, and data-plane access used Microsoft Entra authentication. The planned future-state improvement is to migrate the backend to private endpoint access through an Azure-hosted or self-hosted deployment runner.
 
+### Public Storage Account Creation Denied by Management Group policy (Storage accounts should restrict network access)
 
-**Because the project was executed from a local workstation without private VNet connectivity, I created a narrowly scoped policy exemption limited to the dedicated Terraform backend resource group. Anonymous blob access remained disabled, HTTPS and TLS 1.2 were enforced, and data-plane access used Microsoft Entra authentication. The planned future-state improvement is to migrate the backend to private endpoint access through an Azure-hosted or self-hosted deployment runner.
+**Issue:** After setting a policy exemption, a Management Group policy denied the creation of the storage account because of a failed condition that required the firewall to use "Default action : Deny." The policy did not require publicNetworkAccess be disabled. 
 
+**Resolution:** I created a network rule to allow traffic from my public ip address. I configured the firewall default action to deny. Then I reated a network rule to allow my public ip address instead of creating another policy exemption. I left Anonymous blob access disabled and the storage account was able to remain compliant. 
 ---
 
 ## Results and Validation
