@@ -243,19 +243,17 @@ The script:
 
 ## Evidence
 
-Replace each placeholder with a GitHub-hosted screenshot after completing the runbook.
-
 | Evidence | What It Proves | Screenshot |
 |---|---|---|
 | Terraform backend resource group | Dedicated separation for state infrastructure |<img width="1417" height="880" alt="image" src="https://github.com/user-attachments/assets/3a5ffe43-3333-4158-a384-14c226ca8ae6" /> <img width="975" height="444" alt="image" src="https://github.com/user-attachments/assets/44cb1aab-99b3-4cc6-bdfb-0a7160683df4" /> |
 | Storage account and state container | Remote state location exists | <img width="872" height="519" alt="image" src="https://github.com/user-attachments/assets/35bdd13e-cb2c-4225-82e0-65f3c701e8f8" /> <img width="939" height="443" alt="image" src="https://github.com/user-attachments/assets/916f5cac-0003-4151-a4d0-0aa80bc477d6" /> |
 | Terraform state blob | Terraform is writing state remotely | <img width="1490" height="604" alt="image" src="https://github.com/user-attachments/assets/35468b99-f885-49a4-b07a-65dc5db4b3c8" /> |
-| Successful Terraform apply | Infrastructure was deployed through IaC | ![Terraform apply](../../screenshots/phase-1/04-terraform-apply.png) |
-| Landing-zone resource groups | Purpose-built resource organization exists | ![Landing-zone resource groups](../../screenshots/phase-1/05-resource-groups.png) |
-| Resource tags | Required governance metadata is applied | ![Resource tags](../../screenshots/phase-1/06-resource-tags.png) |
-| Clean Terraform plan | Deployed state matches the configuration | ![Clean Terraform plan](../../screenshots/phase-1/07-clean-plan.png) |
-| Python automation output | Automated compliance calculation completed | ![Python tag report output](../../screenshots/phase-1/08-python-report.png) |
-| CSV compliance report | Script produced reusable governance evidence | ![CSV compliance report](../../screenshots/phase-1/09-compliance-csv.png) |
+| Clean Terraform plan | Terraform created and reviewed | <img width="975" height="592" alt="image" src="https://github.com/user-attachments/assets/5340c80a-4d31-499e-993f-85d0ef17b83b" /> |
+| Successful Terraform apply | Infrastructure was deployed through IaC | <img width="975" height="310" alt="image" src="https://github.com/user-attachments/assets/d50fd1df-972d-4398-b939-5d8de7fc0210" /> |
+| Landing-zone resource groups | Purpose-built resource organization exists | <img width="975" height="376" alt="image" src="https://github.com/user-attachments/assets/237cae68-d188-4200-a4cf-7f3269bb1b98" /> |
+| Resource tags | Required governance metadata is applied | <img width="686" height="124" alt="image" src="https://github.com/user-attachments/assets/0a4a3784-fdbc-4cfb-8262-0fa23c3e321b" /> |
+| Python automation output | Automated compliance calculation completed | <img width="1283" height="871" alt="image" src="https://github.com/user-attachments/assets/b52c350c-6691-4c78-b231-c45eb463447c" /> |
+| CSV compliance report | Script produced reusable governance evidence | <img width="1418" height="751" alt="image" src="https://github.com/user-attachments/assets/f8e1d636-b06e-4149-a84d-af7999c41fe7" /> |
 
 ### Recommended Screenshot Guidance
 
