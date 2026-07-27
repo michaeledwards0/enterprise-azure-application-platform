@@ -1496,7 +1496,7 @@ The Python packages installed in Step 14 provide the Azure libraries. The actual
 From the repository root:
 
 ```powershell
-cd . utomation	ag-compliance
+cd automation/tag-compliance
 ```
 
 Confirm the expected files and folders:
