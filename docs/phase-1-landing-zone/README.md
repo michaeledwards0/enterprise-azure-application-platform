@@ -253,14 +253,7 @@ The script:
 | Landing-zone resource groups | Purpose-built resource organization exists | <img width="975" height="376" alt="image" src="https://github.com/user-attachments/assets/237cae68-d188-4200-a4cf-7f3269bb1b98" /> |
 | Resource tags | Required governance metadata is applied | <img width="686" height="124" alt="image" src="https://github.com/user-attachments/assets/0a4a3784-fdbc-4cfb-8262-0fa23c3e321b" /> |
 | Python automation output | Automated compliance calculation completed | <img width="1283" height="871" alt="image" src="https://github.com/user-attachments/assets/b52c350c-6691-4c78-b231-c45eb463447c" /> |
-| CSV compliance report | Script produced reusable governance evidence | <img width="1418" height="751" alt="image" src="https://github.com/user-attachments/assets/f8e1d636-b06e-4149-a84d-af7999c41fe7" /> |
-
-### Recommended Screenshot Guidance
-
-- Crop screenshots to the relevant Azure or terminal content.
-- Remove subscription IDs, tenant IDs, email addresses, access keys, and local file paths where appropriate.
-- Use descriptive filenames in numerical order.
-- Do not upload `.tfstate`, `backend.hcl`, credentials, or full terminal history containing secrets.
+| CSV compliance report | Script produced reusable governance evidence | <img width="1418" height="751" alt="image" src="https://github.com/user-attachments/assets/f0f2348c-a908-46f0-89a6-bb663a901a74" />.
 
 ---
 
