@@ -247,9 +247,9 @@ Replace each placeholder with a GitHub-hosted screenshot after completing the ru
 
 | Evidence | What It Proves | Screenshot |
 |---|---|---|
-| Terraform backend resource group | Dedicated separation for state infrastructure | ![Terraform backend resource group]<img width="1417" height="880" alt="image" src="https://github.com/user-attachments/assets/3a5ffe43-3333-4158-a384-14c226ca8ae6" /> |
-| Storage account and state container | Remote state location exists | ![Terraform state storage](../../screenshots/phase-1/02-state-storage.png) |
-| Terraform state blob | Terraform is writing state remotely | ![Terraform state blob](../../screenshots/phase-1/03-state-blob.png) |
+| Terraform backend resource group | Dedicated separation for state infrastructure |<img width="1417" height="880" alt="image" src="https://github.com/user-attachments/assets/3a5ffe43-3333-4158-a384-14c226ca8ae6" /> <img width="975" height="444" alt="image" src="https://github.com/user-attachments/assets/44cb1aab-99b3-4cc6-bdfb-0a7160683df4" /> |
+| Storage account and state container | Remote state location exists | <img width="872" height="519" alt="image" src="https://github.com/user-attachments/assets/35bdd13e-cb2c-4225-82e0-65f3c701e8f8" /> <img width="939" height="443" alt="image" src="https://github.com/user-attachments/assets/916f5cac-0003-4151-a4d0-0aa80bc477d6" /> |
+| Terraform state blob | Terraform is writing state remotely | <img width="1490" height="604" alt="image" src="https://github.com/user-attachments/assets/35468b99-f885-49a4-b07a-65dc5db4b3c8" /> |
 | Successful Terraform apply | Infrastructure was deployed through IaC | ![Terraform apply](../../screenshots/phase-1/04-terraform-apply.png) |
 | Landing-zone resource groups | Purpose-built resource organization exists | ![Landing-zone resource groups](../../screenshots/phase-1/05-resource-groups.png) |
 | Resource tags | Required governance metadata is applied | ![Resource tags](../../screenshots/phase-1/06-resource-tags.png) |
