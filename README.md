@@ -57,10 +57,9 @@ The existing environment relies on manual deployments, inconsistent naming and t
 
 ---
 
-## Tenant and Subscription Strategy
+## Tenant and Subscription Strategy & Tradeoffs
 
-Both flagship portfolio projects can remain inside the same Microsoft Entra tenant while using separate governance and deployment boundaries.
-
+ Decided to deploy both projects under the same Subscription scope for project purposes. Both flagship portfolio projects remain inside the same Microsoft Entra tenant and Subscription, but will have their own Management group governance. 
 ```mermaid
 flowchart TB
     Tenant[Microsoft Entra Tenant]
@@ -68,8 +67,8 @@ flowchart TB
     Tenant --> AIGroup[Management Group: AI Infrastructure]
     Tenant --> AppGroup[Management Group: Application Platform]
 
-    AIGroup --> AISub[AI Infrastructure Subscription]
-    AppGroup --> AppSub[Application Platform Subscription]
+    AIGroup --> Sub1[AI Infrastructure Subscription]
+    AppGroup --> Sub1[Application Platform Subscription]
 
     AISub --> AIProject[Enterprise Azure AI Infrastructure]
     AppSub --> AppProject[Enterprise Azure Application Platform]
