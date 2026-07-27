@@ -212,15 +212,15 @@ The script:
 
 ### Public Storage Account Creation Denied
 
-**Issue:** An inherited Azure Policy denied storage accounts with public network access. Because the project was executed from a local workstation without private VNet connectivity
+**Issue:** An inherited Azure Policy denied storage accounts with public network access. Because the project was executed from a local workstation without private VNet connectivity, Terraform required controlled access through the storage account's public endpoint.
 
 **Resolution:** I created a narrowly scoped policy exemption limited to the dedicated Terraform backend resource group. Anonymous blob access remained disabled, HTTPS and TLS 1.2 were enforced, and data-plane access used Microsoft Entra authentication. The planned future-state improvement is to migrate the backend to private endpoint access through an Azure-hosted or self-hosted deployment runner.
 
-### Public Storage Account Creation Denied by Management Group policy (Storage accounts should restrict network access)
+### Management-Group Policy Required the Storage Firewall to Deny Traffic by Default
 
-**Issue:** After setting a policy exemption, a Management Group policy denied the creation of the storage account because of a failed condition that required the firewall to use "Default action : Deny." The policy did not require publicNetworkAccess be disabled. 
+**Issue:** After the resource-group exemption was created, a separate policy inherited from the management-group scope denied the storage-account deployment because `networkAcls.defaultAction` was not set to `Deny`. The policy did not require the public endpoint to be disabled; it required all network traffic to be blocked unless explicitly allowed.
 
-**Resolution:** I created a network rule to allow traffic from my public ip address. I configured the firewall default action to deny. Then I reated a network rule to allow my public ip address instead of creating another policy exemption. I left Anonymous blob access disabled and the storage account was able to remain compliant. 
+**Resolution:** Instead of requesting another exemption, I configured the storage firewall with a default action of `Deny` and added a network rule for my workstation’s current public IP address. Anonymous blob access remained disabled, HTTPS and TLS 1.2 were enforced, and Terraform used Microsoft Entra authentication. This produced a policy-compliant backend that remained reachable only from the approved workstation. 
 
 
 ---
@@ -247,15 +247,15 @@ Replace each placeholder with a GitHub-hosted screenshot after completing the ru
 
 | Evidence | What It Proves | Screenshot |
 |---|---|---|
-| Terraform backend resource group | Dedicated separation for state infrastructure | `![Terraform backend resource group](../../screenshots/phase-1/01-backend-resource-group.png)` |
-| Storage account and state container | Remote state location exists | `![Terraform state storage](../../screenshots/phase-1/02-state-storage.png)` |
-| Terraform state blob | Terraform is writing state remotely | `![Terraform state blob](../../screenshots/phase-1/03-state-blob.png)` |
-| Successful Terraform apply | Infrastructure was deployed through IaC | `![Terraform apply](../../screenshots/phase-1/04-terraform-apply.png)` |
-| Landing-zone resource groups | Purpose-built resource organization exists | `![Landing-zone resource groups](../../screenshots/phase-1/05-resource-groups.png)` |
-| Resource tags | Required governance metadata is applied | `![Resource tags](../../screenshots/phase-1/06-resource-tags.png)` |
-| Clean Terraform plan | Deployed state matches the configuration | `![Clean Terraform plan](../../screenshots/phase-1/07-clean-plan.png)` |
-| Python automation output | Automated compliance calculation completed | `![Python tag report output](../../screenshots/phase-1/08-python-report.png)` |
-| CSV compliance report | Script produced reusable governance evidence | `![CSV compliance report](../../screenshots/phase-1/09-compliance-csv.png)` |
+| Terraform backend resource group | Dedicated separation for state infrastructure | ![Terraform backend resource group](../../screenshots/phase-1/01-backend-resource-group.png) |
+| Storage account and state container | Remote state location exists | ![Terraform state storage](../../screenshots/phase-1/02-state-storage.png) |
+| Terraform state blob | Terraform is writing state remotely | ![Terraform state blob](../../screenshots/phase-1/03-state-blob.png) |
+| Successful Terraform apply | Infrastructure was deployed through IaC | ![Terraform apply](../../screenshots/phase-1/04-terraform-apply.png) |
+| Landing-zone resource groups | Purpose-built resource organization exists | ![Landing-zone resource groups](../../screenshots/phase-1/05-resource-groups.png) |
+| Resource tags | Required governance metadata is applied | ![Resource tags](../../screenshots/phase-1/06-resource-tags.png) |
+| Clean Terraform plan | Deployed state matches the configuration | ![Clean Terraform plan](../../screenshots/phase-1/07-clean-plan.png) |
+| Python automation output | Automated compliance calculation completed | ![Python tag report output](../../screenshots/phase-1/08-python-report.png) |
+| CSV compliance report | Script produced reusable governance evidence | ![CSV compliance report](../../screenshots/phase-1/09-compliance-csv.png) |
 
 ### Recommended Screenshot Guidance
 

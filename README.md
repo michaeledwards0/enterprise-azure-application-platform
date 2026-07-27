@@ -15,7 +15,7 @@ The **Enterprise Azure Application Platform** is a production-style Azure enviro
 
 The project demonstrates how an Azure cloud engineering team can establish a governed landing zone, deploy enterprise networking, manage identities and secrets, operate an Azure Kubernetes Service platform, automate infrastructure delivery, monitor platform health, and recover from failure.
 
-Terraform is used to provision Azure infrastructure. GitHub Actions controls infrastructure and application delivery. Python is used to automate recurring cloud-engineering tasks that would otherwise require manual portal work.
+Terraform is used to provision Azure infrastructure. GitHub Actions will be introduced in Workstream 5 to automate infrastructure and application delivery. Python is used throughout the project to automate recurring cloud-engineering tasks that would otherwise require manual portal work.
 
 > **Portfolio objective:** Demonstrate practical readiness for Azure Cloud Engineer, Azure Infrastructure Engineer, Platform Engineer, DevOps Engineer, and Cloud Security Engineer roles.
 
@@ -59,40 +59,43 @@ The existing environment relies on manual deployments, inconsistent naming and t
 
 ## Tenant and Subscription Strategy & Tradeoffs
 
- Decided to deploy both projects under the same Subscription scope for project purposes. Both flagship portfolio projects remain inside the same Microsoft Entra tenant and Subscription, but will have their own Management group governance. 
+Both flagship portfolio projects are deployed in the same Microsoft Entra tenant and the same Azure subscription.
+
+A subscription can belong to only one management-group branch at a time, so the projects are not placed under separate management groups. Separation is enforced inside the shared subscription through dedicated resource groups, project-specific naming and tags, separate Terraform state, separate identities, and independent security and monitoring resources.
+
 ```mermaid
 flowchart TB
     Tenant[Microsoft Entra Tenant]
+    Tenant --> PortfolioMG[Management Group: Portfolio Lab]
+    PortfolioMG --> SharedSub[Shared Azure Subscription]
 
-    Tenant --> AIGroup[Management Group: AI Infrastructure]
-    Tenant --> AppGroup[Management Group: Application Platform]
+    SharedSub --> AIProject[Enterprise Azure AI Infrastructure]
+    SharedSub --> AppProject[Enterprise Azure Application Platform]
 
-    AIGroup --> Sub1[AI Infrastructure Subscription]
-    AppGroup --> Sub1[Application Platform Subscription]
+    AIProject --> AIRGs[Dedicated AI resource groups]
+    AIProject --> AIControls[AI-specific Policy, RBAC, Key Vault, monitoring]
 
-    AISub --> AIProject[Enterprise Azure AI Infrastructure]
-    AppSub --> AppProject[Enterprise Azure Application Platform]
+    AppProject --> AppRGs[Dedicated EAAP resource groups]
+    AppProject --> AppState[Separate Terraform backend and state key]
+    AppProject --> AppControls[EAAP-specific identities, Key Vault, monitoring]
 ```
 
-### Preferred Design
+### Implemented Shared-Subscription Design
 
-- One shared Microsoft Entra tenant
-- Separate management groups for each flagship project
-- Separate Azure subscriptions where available
-- Independent Azure Policy and RBAC scopes
-- Separate Terraform state, workload identities, Key Vaults, budgets, and project tags
+- One Microsoft Entra tenant
+- One management-group path for the shared subscription
+- One Azure subscription hosting both portfolio projects
+- Dedicated resource groups for each project
+- Separate Terraform state and backend configuration
+- Project-specific naming conventions and tags
+- Separate Key Vaults, identities, budgets, and monitoring resources where applicable
+- Azure Policy evaluated at management-group, subscription, and resource-group scopes
 
-### Portfolio-Friendly Fallback
+### Production-Scale Alternative
 
-If a second subscription is unavailable, both projects can use the same subscription with strict separation through:
+In a larger enterprise, the preferred design would normally use separate subscriptions for strong billing, quota, RBAC, policy, and lifecycle isolation. The shared-subscription model is appropriate for this portfolio environment because project boundaries are still enforced through resource groups, state separation, identities, tags, and governance controls.
 
-- Dedicated resource groups
-- Separate Terraform state files
-- Separate GitHub workload identities or service principals
-- Separate Key Vaults and monitoring resources
-- Project-specific tags, budgets, and naming conventions
-
-A separate Entra tenant is unnecessary unless the project intentionally demonstrates cross-tenant administration, Azure Lighthouse, B2B collaboration, or hard tenant isolation.
+A separate Entra tenant is unnecessary unless the design intentionally demonstrates cross-tenant administration, Azure Lighthouse, B2B collaboration, or hard tenant isolation.
 
 ---
 
@@ -157,8 +160,8 @@ These automations use Azure SDK authentication through `DefaultAzureCredential`,
 
 | Workstream | Focus | Primary Skills | Status |
 |---|---|---|---|
-| [**1**](docs/phase-1-landing-zone/README.md) | [**Enterprise Landing Zone**](docs/phase-1-landing-zone/README.md) | Terraform backend, naming, tagging, resource organization, Python governance automation | In progress |
-| [**2**](docs/phase-2-enterprise-networking/README.md) | [**Enterprise Networking**](docs/phase-2-enterprise-networking/README.md) | Hub-and-spoke VNets, subnets, NSGs, routing, private DNS | Planned |
+| [**1**](docs/phase-1-landing-zone/README.md) | [**Enterprise Landing Zone**](docs/phase-1-landing-zone/README.md) | Terraform backend, naming, tagging, resource organization, Python governance automation | Complete |
+| [**2**](docs/phase-2-enterprise-networking/README.md) | [**Enterprise Networking**](docs/phase-2-enterprise-networking/README.md) | Hub-and-spoke VNets, subnets, NSGs, routing, private DNS | Ready to deploy |
 | **3** | Identity and Secrets | Managed identity, Azure RBAC, Key Vault, secret delivery | Planned |
 | **4** | Container Platform | Docker, ACR, AKS, node pools, ingress | Planned |
 | **5** | CI/CD Automation | GitHub Actions, OIDC federation, Terraform workflow, application delivery | Planned |
@@ -177,11 +180,11 @@ Enterprise-Azure-Application-Platform/
 ├── docs/
 │   ├── phase-1-landing-zone/
 │   │   └── README.md
-│   └── phase-2-networking/
+│   └── phase-2-enterprise-networking/
 │       └── README.md
 ├── runbooks/
 │   ├── phase-1-landing-zone-runbook.md
-│   └── phase-2-networking-runbook.md
+│   └── phase-2-enterprise-networking-runbook.md
 ├── terraform/
 │   ├── bootstrap/
 │   ├── environments/

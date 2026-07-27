@@ -343,20 +343,20 @@ The packages do not need to be reinstalled every time. Activate the existing vir
 
 Create the project folder:
 
-```bash
-mkdir Enterprise-Azure-Application-Platform
-cd Enterprise-Azure-Application-Platform
+```powershell
+New-Item -ItemType Directory -Force -Path ".\enterprise-azure-application-platform"
+cd .\enterprise-azure-application-platform
 git init
 ```
 
 Create the initial folder structure:
 
-```bash
-mkdir -p docs/phase-1-landing-zone
-mkdir -p runbooks
-mkdir -p terraform/environments/dev
-mkdir -p automation/tag-compliance/reports
-mkdir -p screenshots/phase-1
+```powershell
+New-Item -ItemType Directory -Force -Path ".\docs\phase-1-landing-zone"
+New-Item -ItemType Directory -Force -Path ".\runbooks"
+New-Item -ItemType Directory -Force -Path ".\terraform\environments\dev"
+New-Item -ItemType Directory -Force -Path ".\automation\tag-compliance\reports"
+New-Item -ItemType Directory -Force -Path ".\screenshots\phase-1"
 ```
 
 > **Windows PowerShell:** If `mkdir -p` is unavailable, create the folders individually with `New-Item -ItemType Directory -Force -Path <path>`.
@@ -420,7 +420,7 @@ Thumbs.db
 
 Validate that sensitive Terraform files will not be committed later:
 
-```bash
+```powershell
 git status
 ```
 
@@ -818,8 +818,8 @@ tfstate   None
 
 Move into the environment directory:
 
-```bash
-cd terraform/environments/dev
+```powershell
+cd .\terraform\environments\dev
 ```
 
 Create `backend.hcl.example`:
@@ -834,8 +834,8 @@ use_azuread_auth     = true
 
 Copy it to the ignored environment file:
 
-```bash
-cp backend.hcl.example backend.hcl
+```powershell
+Copy-Item .\backend.hcl.example .\backend.hcl
 ```
 
 Update `backend.hcl` with the actual storage account name.
@@ -856,8 +856,8 @@ sed -i "s/REPLACE_WITH_UNIQUE_STORAGE_ACCOUNT_NAME/$TFSTATE_SA/" backend.hcl
 
 Review the file:
 
-```bash
-cat backend.hcl
+```powershell
+Get-Content .\backend.hcl
 ```
 
 Do not commit the completed `backend.hcl` file.
@@ -1032,14 +1032,14 @@ criticality         = "Medium"
 
 Copy the example to the ignored working file:
 
-```bash
-cp terraform.tfvars.example terraform.tfvars
+```powershell
+Copy-Item .\terraform.tfvars.example .\terraform.tfvars
 ```
 
 Review the directory:
 
-```bash
-ls -la
+```powershell
+Get-ChildItem -Force
 ```
 
 Expected files:
@@ -1064,19 +1064,19 @@ variables.tf
 
 Format the configuration:
 
-```bash
+```powershell
 terraform fmt -recursive
 ```
 
 Initialize the backend:
 
-```bash
+```powershell
 terraform init -backend-config=backend.hcl
 ```
 
 Validate the configuration:
 
-```bash
+```powershell
 terraform validate
 ```
 
@@ -1092,13 +1092,13 @@ Success! The configuration is valid.
 
 Create a saved plan:
 
-```bash
+```powershell
 terraform plan -out=phase1.tfplan
 ```
 
 Review the plan carefully:
 
-```bash
+```powershell
 terraform show phase1.tfplan
 ```
 
@@ -1112,13 +1112,13 @@ Do not apply the plan if unexpected resources, regions, names, or destructive ac
 
 Apply the reviewed plan:
 
-```bash
+```powershell
 terraform apply phase1.tfplan
 ```
 
 Display outputs:
 
-```bash
+```powershell
 terraform output
 ```
 
@@ -1135,7 +1135,7 @@ az group list --query "[?starts_with(name, 'rg-eaap-')].[name,location,tags.Mana
 
 List state objects from Terraform:
 
-```bash
+```powershell
 terraform state list
 ```
 
@@ -1220,7 +1220,7 @@ Terraform also applies `ResourcePurpose` to each landing-zone resource group.
 
 Run another plan:
 
-```bash
+```powershell
 terraform plan
 ```
 
@@ -1530,7 +1530,7 @@ New-Item `
 Open the file in Visual Studio Code:
 
 ```powershell
-code .	ag_compliance_report.py
+code .\tag_compliance_report.py
 ```
 
 The file is empty when it is first created. Paste the complete script below into `tag_compliance_report.py`, then save the file with `Ctrl + S`.
@@ -1802,7 +1802,7 @@ Simple meaning:
 Check the script for Python syntax errors:
 
 ```powershell
-python -m py_compile .	ag_compliance_report.py
+python -m py_compile .\tag_compliance_report.py
 ```
 
 Expected result:
@@ -1824,7 +1824,7 @@ Confirm the old `union` query is not present:
 
 ```powershell
 Select-String `
-  -Path .	ag_compliance_report.py `
+  -Path .\tag_compliance_report.py `
   -Pattern "union"
 ```
 
@@ -1851,7 +1851,7 @@ $env:AZURE_SUBSCRIPTION_ID = az account show --query id -o tsv
 ### 15.5 Run the Tag-Compliance Report
 
 ```powershell
-python .	ag_compliance_report.py --include-resource-groups
+python .\tag_compliance_report.py --include-resource-groups
 ```
 
 Simple meaning:
@@ -1895,7 +1895,7 @@ A noncompliant result may be expected in a shared subscription containing resour
 ### 15.6 Generate Evidence Without Failing on Noncompliance
 
 ```powershell
-python .	ag_compliance_report.py `
+python .\tag_compliance_report.py `
   --include-resource-groups `
   --no-fail-on-noncompliance
 ```
@@ -1914,7 +1914,16 @@ automation/tag-compliance/reports/azure-tag-compliance-<timestamp>.csv
 
 List the generated reports:
 
+Make sure PowerShell is currently in:
+
+```text
+enterprise-azure-application-platform\automation\tag-compliance
+```
+
+Then list the generated reports:
+
 ```powershell
+Get-ChildItem .\reports
 Get-ChildItem .\reports
 
 make sure to be in : enterprise-azure-application-platform\automation\tag-compliance
@@ -1923,6 +1932,7 @@ make sure to be in : enterprise-azure-application-platform\automation\tag-compli
 Open the newest report in Visual Studio Code:
 
 ```powershell
+$latestReport = Get-ChildItem .\reports\azure-tag-compliance-*.csv |
 $latestReport = Get-ChildItem .\reports\azure-tag-compliance-*.csv |
   Sort-Object LastWriteTime -Descending |
   Select-Object -First 1
@@ -2070,7 +2080,7 @@ cd ../..
 
 Review pending files:
 
-```bash
+```powershell
 git status
 ```
 
@@ -2086,19 +2096,26 @@ Confirm that these files are **not** staged:
 
 Stage the safe project files:
 
-```bash
-git add README.md .gitignore docs runbooks terraform automation screenshots
+```powershell
+git add .\.gitignore
+git add .\docs\phase-1-landing-zone
+git add .\runbooks\phase-1-landing-zone-runbook.md
+git add .\terraform
+git add .\automation\tag-compliance
+git add .\screenshots\phase-1
 ```
+
+This stages only the Phase 1 project files and avoids accidentally including unfinished later workstreams.
 
 Review the staged changes:
 
-```bash
+```powershell
 git diff --cached
 ```
 
 Commit:
 
-```bash
+```powershell
 git commit -m "Complete Workstream 1 enterprise landing zone"
 ```
 
@@ -2146,7 +2163,7 @@ Confirm:
 
 Then rerun:
 
-```bash
+```powershell
 terraform init -reconfigure -backend-config=backend.hcl
 ```
 
@@ -2320,7 +2337,7 @@ Check whether tags were modified manually in the portal. Terraform will attempt 
 
 First confirm that no other Terraform process is running. Terraform normally releases locks automatically. Use force-unlock only when you have confirmed the lock is stale:
 
-```bash
+```powershell
 terraform force-unlock <LOCK_ID>
 ```
 
@@ -2346,11 +2363,12 @@ A separate exemption should be documented only for a different policy assignment
 ## Cleanup Procedure
 
 Do not use clean up procedure if you plan on going to the next phase and completing the project. Only Clean up when you are done with the project. 
+Do not use clean up procedure if you plan on going to the next phase and completing the project. Only Clean up when you are done with the project. 
 
 To remove the Terraform-managed resource groups:
 
-```bash
-cd terraform/environments/dev
+```powershell
+cd .\terraform\environments\dev
 terraform plan -destroy -out=destroy.tfplan
 terraform apply destroy.tfplan
 ```
@@ -2359,10 +2377,10 @@ The backend is intentionally not destroyed by the landing-zone Terraform configu
 
 After the Terraform-managed resources are removed, delete the backend only when the entire project is finished and you no longer need the state history:
 
-```bash
-az group delete \
-  --name "rg-eaap-tfstate-dev" \
-  --yes \
+```powershell
+az group delete `
+  --name "rg-eaap-tfstate-dev" `
+  --yes `
   --no-wait
 ```
 

@@ -22,7 +22,7 @@ You will:
 7. Create a centralized Azure Private DNS zone and link both VNets.
 8. Validate the deployment and capture portfolio evidence.
 
-> **Dependency:** Do not deploy Workstream 2 until Workstream 1 is complete in the intended EAAP subscription. The remote backend, state blob, and four landing-zone resource groups must already exist.
+> **Dependency:** Do not deploy Workstream 2 until Workstream 1 is complete in the shared portfolio subscription. The EAAP remote backend, state blob, and four landing-zone resource groups must already exist.
 
 ---
 
@@ -87,10 +87,10 @@ List subscriptions:
 az account list --output table
 ```
 
-Select the dedicated EAAP subscription:
+Select the shared portfolio subscription that contains both flagship projects:
 
 ```powershell
-az account set --subscription "<EAAP_SUBSCRIPTION_NAME_OR_ID>"
+az account set --subscription "<SHARED_SUBSCRIPTION_NAME_OR_ID>"
 ```
 
 Confirm the context without exposing IDs:
@@ -173,6 +173,8 @@ No changes. Your infrastructure matches the configuration.
 ```
 
 Stop if the backend cannot initialize, the resource groups are missing, or Terraform reports unexplained drift.
+
+> **State continuity:** Workstream 2 adds Terraform files to the existing `terraform/environments/dev` configuration and continues using the same EAAP state key: `eaap/dev/landing-zone.tfstate`. This allows Terraform to manage the Phase 1 resource groups and Phase 2 networking as one environment. The Azure AI project uses separate resource groups and separate state.
 
 ---
 
@@ -451,7 +453,7 @@ resource "azurerm_subnet_network_security_group_association" "workload" {
 '@ | Set-Content -Path "network-security.tf"
 ```
 
-> The workload deny rule overrides Azure's default `AllowVNetInBound` rule. Later phases must deliberately add required AKS, ingress, health-probe, and management rules before deploying those services.
+> The workload deny rule overrides Azure's default `AllowVNetInBound` rule. Before AKS is deployed, the container-platform workstream must add every required AKS, ingress, health-probe, DNS, monitoring, and management flow in the same Terraform change. Do not deploy AKS into this subnet until that NSG review is complete.
 
 ---
 
@@ -1068,7 +1070,16 @@ git check-ignore -v .\terraform\environments\dev\phase2.tfplan
 Stage safe files:
 
 ```powershell
-git add README.md docs runbooks terraform screenshots
+git add .\README.md
+git add .\docs\phase-2-enterprise-networking
+git add .\runbooks\phase-2-enterprise-networking-runbook.md
+git add .\terraform\environments\dev\networking-variables.tf
+git add .\terraform\environments\dev\networking.tf
+git add .\terraform\environments\dev\network-security.tf
+git add .\terraform\environments\dev\routing.tf
+git add .\terraform\environments\dev\private-dns.tf
+git add .\terraform\environments\dev\networking-outputs.tf
+git add .\screenshots\phase-2
 ```
 
 Review the staged changes:

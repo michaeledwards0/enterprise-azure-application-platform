@@ -39,6 +39,8 @@ Contoso Digital Services needs a secure network foundation before application pl
 
 The organization also needs an architecture that can grow without forcing major IP-address changes or introducing overlapping address spaces. The network must support future services such as AKS, Azure Container Registry, Key Vault, private endpoints, monitoring components, and centralized security controls.
 
+The EAAP environment shares an Azure subscription with the Enterprise Azure AI Infrastructure project. Network separation is therefore enforced through dedicated EAAP resource groups, non-overlapping address spaces, project-specific tags, and an independent Terraform state key.
+
 ---
 
 ## Engineering Challenge
@@ -175,7 +177,7 @@ This creates a controlled internal namespace and validates the virtual-network-l
 
 **Issue:** Terraform networking cannot be deployed until the Phase 1 remote backend and landing-zone resource groups are completed in the correct subscription.
 
-**Resolution:** Treat Workstream 2 deployment as blocked until the new EAAP subscription is selected, the backend exists, and the Phase 1 Terraform state is healthy.
+**Resolution:** Treat Workstream 2 deployment as blocked until the shared portfolio subscription is selected, the EAAP backend exists, and the Phase 1 Terraform state is healthy. EAAP remains isolated from the Azure AI project through dedicated resource groups, project tags, and a separate Terraform state key.
 
 ### Avoiding meaningless custom routes
 
@@ -210,15 +212,15 @@ This creates a controlled internal namespace and validates the virtual-network-l
 
 | Evidence | What It Proves | Screenshot |
 |---|---|---|
-| Hub and spoke VNets | Separate network boundaries and address spaces exist | `![Hub and spoke VNets](../../screenshots/phase-2/01-hub-spoke-vnets.png)` |
-| Hub subnets | Shared-services and Bastion capacity are reserved | `![Hub subnets](../../screenshots/phase-2/02-hub-subnets.png)` |
-| Spoke subnets | Ingress, workload, and private endpoints are segmented | `![Spoke subnets](../../screenshots/phase-2/03-spoke-subnets.png)` |
-| Connected peerings | Private hub-to-spoke connectivity is established | `![VNet peerings](../../screenshots/phase-2/04-vnet-peerings.png)` |
-| Network security groups | Subnet-level controls exist | `![Network security groups](../../screenshots/phase-2/05-network-security-groups.png)` |
-| Route-table associations | Routing control is attached to intended subnets | `![Route table](../../screenshots/phase-2/06-route-table.png)` |
-| Private DNS zone and links | Centralized private DNS foundation is active | `![Private DNS links](../../screenshots/phase-2/07-private-dns-links.png)` |
-| Terraform apply | Networking was deployed through IaC | `![Terraform apply](../../screenshots/phase-2/08-terraform-apply.png)` |
-| Clean Terraform plan | Azure and Terraform state are synchronized | `![Clean Terraform plan](../../screenshots/phase-2/09-clean-plan.png)` |
+| Hub and spoke VNets | Separate network boundaries and address spaces exist | ![Hub and spoke VNets](../../screenshots/phase-2/01-hub-spoke-vnets.png) |
+| Hub subnets | Shared-services and Bastion capacity are reserved | ![Hub subnets](../../screenshots/phase-2/02-hub-subnets.png) |
+| Spoke subnets | Ingress, workload, and private endpoints are segmented | ![Spoke subnets](../../screenshots/phase-2/03-spoke-subnets.png) |
+| Connected peerings | Private hub-to-spoke connectivity is established | ![VNet peerings](../../screenshots/phase-2/04-vnet-peerings.png) |
+| Network security groups | Subnet-level controls exist | ![Network security groups](../../screenshots/phase-2/05-network-security-groups.png) |
+| Route-table associations | Routing control is attached to intended subnets | ![Route table](../../screenshots/phase-2/06-route-table.png) |
+| Private DNS zone and links | Centralized private DNS foundation is active | ![Private DNS links](../../screenshots/phase-2/07-private-dns-links.png) |
+| Terraform apply | Networking was deployed through IaC | ![Terraform apply](../../screenshots/phase-2/08-terraform-apply.png) |
+| Clean Terraform plan | Azure and Terraform state are synchronized | ![Clean Terraform plan](../../screenshots/phase-2/09-clean-plan.png) |
 
 ---
 
