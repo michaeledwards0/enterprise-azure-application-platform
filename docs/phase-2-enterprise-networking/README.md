@@ -212,15 +212,15 @@ This creates a controlled internal namespace and validates the virtual-network-l
 
 | Evidence | What It Proves | Screenshot |
 |---|---|---|
-| Hub and spoke VNets | Separate network boundaries and address spaces exist | ![Hub and spoke VNets](../../screenshots/phase-2/01-hub-spoke-vnets.png) |
-| Hub subnets | Shared-services and Bastion capacity are reserved | ![Hub subnets](../../screenshots/phase-2/02-hub-subnets.png) |
-| Spoke subnets | Ingress, workload, and private endpoints are segmented | ![Spoke subnets](../../screenshots/phase-2/03-spoke-subnets.png) |
-| Connected peerings | Private hub-to-spoke connectivity is established | ![VNet peerings](../../screenshots/phase-2/04-vnet-peerings.png) |
-| Network security groups | Subnet-level controls exist | ![Network security groups](../../screenshots/phase-2/05-network-security-groups.png) |
-| Route-table associations | Routing control is attached to intended subnets | ![Route table](../../screenshots/phase-2/06-route-table.png) |
+| Hub and spoke VNets | Separate network boundaries and address spaces exist |<img width="975" height="203" alt="image" src="https://github.com/user-attachments/assets/857a326c-d508-4a31-95e5-6a1015256bd0" /> <img width="975" height="803" alt="image" src="https://github.com/user-attachments/assets/6b661470-6a04-45e0-8d4a-57f7c6fa97ec" /> |
+| Hub subnets | Shared-services and Bastion capacity are reserved | <img width="701" height="236" alt="image" src="https://github.com/user-attachments/assets/67de69a2-4a83-4f72-8379-0fefd05ce844" /> <img width="1479" height="441" alt="image" src="https://github.com/user-attachments/assets/598a077d-9627-4cc3-9c5e-ce6c58561184" /> |
+| Spoke subnets | Ingress, workload, and private endpoints are segmented |<img width="722" height="289" alt="image" src="https://github.com/user-attachments/assets/5040a1b7-9d58-42a8-97d4-4232e6c1b178" /> <img width="1468" height="676" alt="image" src="https://github.com/user-attachments/assets/3935dfa0-a7e4-4115-874f-cf280cb2fd53" /> |
+| Connected peerings | Private hub-to-spoke connectivity is established | <img width="780" height="412" alt="image" src="https://github.com/user-attachments/assets/1f66bba8-d13d-4956-8462-e89660752d48" /> <img width="1222" height="334" alt="image" src="https://github.com/user-attachments/assets/c58c2e50-c8b3-4f20-9026-d2d34ecf5d08" /> <img width="1208" height="304" alt="image" src="https://github.com/user-attachments/assets/dfc4145f-c825-4bc1-a994-f12967785c6d" /> |
+| Network security groups | Subnet-level controls exist |<img width="715" height="345" alt="image" src="https://github.com/user-attachments/assets/ac4421f1-bf9a-419e-a27d-0f1a1e674523" /> <img width="936" height="742" alt="image" src="https://github.com/user-attachments/assets/e434e3fa-e2e2-48fc-892b-2aa4edb88c30" /> |
+| Route-table associations | Routing control is attached to intended subnets | <img width="712" height="203" alt="image" src="https://github.com/user-attachments/assets/038ea87f-5e36-46c3-a6c9-cfc94a6da086" /> | 
 | Private DNS zone and links | Centralized private DNS foundation is active | ![Private DNS links](../../screenshots/phase-2/07-private-dns-links.png) |
-| Terraform apply | Networking was deployed through IaC | ![Terraform apply](../../screenshots/phase-2/08-terraform-apply.png) |
-| Clean Terraform plan | Azure and Terraform state are synchronized | ![Clean Terraform plan](../../screenshots/phase-2/09-clean-plan.png) |
+| Terraform plan | Networking was deployed through IaC |<img width="717" height="434" alt="image" src="https://github.com/user-attachments/assets/92e226bf-da9f-4992-83bc-f8cdd4f2a4c6" /> |
+| Clean Terraform plan | Azure and Terraform state are synchronized |<img width="720" height="432" alt="image" src="https://github.com/user-attachments/assets/c55739c3-32e2-4d4d-ab72-a7770169feb2" /> |
 
 ---
 
