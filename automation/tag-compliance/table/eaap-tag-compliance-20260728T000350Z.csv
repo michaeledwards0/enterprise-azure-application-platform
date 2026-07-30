@@ -1,0 +1,7 @@
+﻿resource_name,resource_type,resource_group,location,compliance_status,missing_tags,resource_id
+steaaptfstatedev7247,microsoft.storage/storageaccounts,rg-eaap-tfstate-dev,southcentralus,Compliant,,/subscriptions/a5d1c916-963b-4c4d-9a3e-a4aee0ac8f49/resourceGroups/rg-eaap-tfstate-dev/providers/Microsoft.Storage/storageAccounts/steaaptfstatedev7247
+rg-eaap-network-dev,microsoft.resources/subscriptions/resourcegroups,rg-eaap-network-dev,southcentralus,Compliant,,/subscriptions/a5d1c916-963b-4c4d-9a3e-a4aee0ac8f49/resourceGroups/rg-eaap-network-dev
+rg-eaap-operations-dev,microsoft.resources/subscriptions/resourcegroups,rg-eaap-operations-dev,southcentralus,Compliant,,/subscriptions/a5d1c916-963b-4c4d-9a3e-a4aee0ac8f49/resourceGroups/rg-eaap-operations-dev
+rg-eaap-platform-dev,microsoft.resources/subscriptions/resourcegroups,rg-eaap-platform-dev,southcentralus,Compliant,,/subscriptions/a5d1c916-963b-4c4d-9a3e-a4aee0ac8f49/resourceGroups/rg-eaap-platform-dev
+rg-eaap-tfstate-dev,microsoft.resources/subscriptions/resourcegroups,rg-eaap-tfstate-dev,southcentralus,Compliant,,/subscriptions/a5d1c916-963b-4c4d-9a3e-a4aee0ac8f49/resourceGroups/rg-eaap-tfstate-dev
+rg-eaap-workload-dev,microsoft.resources/subscriptions/resourcegroups,rg-eaap-workload-dev,southcentralus,Compliant,,/subscriptions/a5d1c916-963b-4c4d-9a3e-a4aee0ac8f49/resourceGroups/rg-eaap-workload-dev
