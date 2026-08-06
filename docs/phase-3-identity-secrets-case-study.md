@@ -187,15 +187,15 @@ Managing a secret value with Terraform writes the value into state.
 
 | Evidence | What It Proves | Screenshot |
 |---|---|---|
-| Managed identity | Workload identity exists | `../../screenshots/phase-3/01-managed-identity.png` |
-| Key Vault overview | Vault deployed in the platform resource group | `../../screenshots/phase-3/02-key-vault-overview.png` |
-| Key Vault networking | Firewall and private endpoint configuration | `../../screenshots/phase-3/03-key-vault-networking.png` |
-| Private endpoint | Approved private connection | `../../screenshots/phase-3/04-key-vault-private-endpoint.png` |
-| Private DNS zone | Key Vault Private Link zone and VNet links | `../../screenshots/phase-3/05-key-vault-private-dns.png` |
-| RBAC assignments | Administrator and workload reader roles | `../../screenshots/phase-3/06-key-vault-rbac.png` |
-| Secret metadata | Test secret exists without exposing its value | `../../screenshots/phase-3/07-test-secret-metadata.png` |
-| Terraform apply | Identity and secrets resources deployed | `../../screenshots/phase-3/08-terraform-apply.png` |
-| Clean plan | Configuration and Azure are synchronized | `../../screenshots/phase-3/09-clean-plan.png` |
+| Managed identity | Workload identity exists | <img width="1036" height="148" alt="image" src="https://github.com/user-attachments/assets/77883088-8f0c-4604-b4cb-6018cfa175bc" /> |
+| Key Vault overview | Vault deployed in the platform resource group | <img width="1077" height="164" alt="image" src="https://github.com/user-attachments/assets/7a0d7590-ef6c-486b-b32a-2596a62e3f25" /> |
+| Key Vault networking | Firewall and private endpoint configuration | <img width="1082" height="430" alt="image" src="https://github.com/user-attachments/assets/ef3d522c-73b6-49f2-97e0-ee8d687f1577" /> |
+| Private endpoint | Approved private connection |<img width="1074" height="277" alt="image" src="https://github.com/user-attachments/assets/c044393f-db3a-43fc-acb9-6d1a2e0b010d" />|
+| Private DNS zone | Key Vault Private Link zone and VNet links | <img width="936" height="190" alt="image" src="https://github.com/user-attachments/assets/a70e006c-ba7f-4649-a6c2-579626f4f92e" /> <img width="1063" height="239" alt="image" src="https://github.com/user-attachments/assets/3cfa91b0-f920-44f0-97e7-f5156aefa9d2" /> |
+| RBAC assignments | Administrator and workload reader roles |<img width="903" height="186" alt="image" src="https://github.com/user-attachments/assets/62434826-be7e-4bc4-bac2-5ac3f3c539a5" /> |
+| Secret metadata | Test secret exists without exposing its value |<img width="933" height="270" alt="image" src="https://github.com/user-attachments/assets/90af9be5-c2bd-4a74-baf9-aabbd3e94241" /> |
+| Terraform apply | Identity and secrets resources deployed | <img width="1045" height="315" alt="image" src="https://github.com/user-attachments/assets/ffcc5504-1677-474b-9bd0-ec131f7877d9" /> |
+| Clean plan | Configuration and Azure are synchronized |<img width="1200" height="98" alt="image" src="https://github.com/user-attachments/assets/19bc853d-11fd-4a5f-971f-6b0d649d4ac9" /> |
 
 ---
 
