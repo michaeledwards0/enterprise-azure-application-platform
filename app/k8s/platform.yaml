@@ -1,0 +1,93 @@
+apiVersion: v1
+kind: Namespace
+metadata:
+  name: eaap-app
+---
+apiVersion: v1
+kind: ServiceAccount
+metadata:
+  name: eaap-workload-sa
+  namespace: eaap-app
+  annotations:
+    azure.workload.identity/client-id: "cdc1f2a9-51f2-4de2-bfca-680905d252e6"
+  labels:
+    azure.workload.identity/use: "true"
+---
+apiVersion: secrets-store.csi.x-k8s.io/v1
+kind: SecretProviderClass
+metadata:
+  name: eaap-key-vault-secrets
+  namespace: eaap-app
+spec:
+  provider: azure
+  parameters:
+    usePodIdentity: "false"
+    clientID: "cdc1f2a9-51f2-4de2-bfca-680905d252e6"
+    keyvaultName: "kveaapdev5803"
+    tenantId: "14abb5bd-36fe-407a-8b80-cc22c8ce0d49"
+    objects: |
+      array:
+        - |
+          objectName: sample-app-message
+          objectType: secret
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: eaap-sample-web
+  namespace: eaap-app
+spec:
+  replicas: 2
+  selector:
+    matchLabels:
+      app: eaap-sample-web
+  template:
+    metadata:
+      labels:
+        app: eaap-sample-web
+        azure.workload.identity/use: "true"
+    spec:
+      serviceAccountName: eaap-workload-sa
+      nodeSelector:
+        workload: applications
+      containers:
+        - name: web
+          image: acreaapdev5803.azurecr.io/eaap-sample-web:v1
+          ports:
+            - containerPort: 80
+          volumeMounts:
+            - name: secrets-store
+              mountPath: "/mnt/secrets-store"
+              readOnly: true
+          readinessProbe:
+            httpGet:
+              path: /
+              port: 80
+            initialDelaySeconds: 5
+            periodSeconds: 10
+      volumes:
+        - name: secrets-store
+          csi:
+            driver: secrets-store.csi.k8s.io
+            readOnly: true
+            volumeAttributes:
+              secretProviderClass: eaap-key-vault-secrets
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: eaap-sample-web
+  namespace: eaap-app
+  annotations:
+    service.beta.kubernetes.io/azure-load-balancer-internal: "true"
+    service.beta.kubernetes.io/azure-load-balancer-internal-subnet: "snet-ingress-dev-scus-001"
+    service.beta.kubernetes.io/azure-load-balancer-ipv4: "10.20.1.10"
+spec:
+  type: LoadBalancer
+  selector:
+    app: eaap-sample-web
+  ports:
+    - name: http
+      protocol: TCP
+      port: 80
+      targetPort: 80
