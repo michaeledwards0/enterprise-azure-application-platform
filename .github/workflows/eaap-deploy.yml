@@ -26,7 +26,7 @@ jobs:
         uses: actions/checkout@v4
 
       - name: Azure login with OIDC
-        uses: azure/login@v2
+        uses: uses: azure/login@v3
         with:
           client-id: 6d2a65d4-e45f-44b2-821f-7508ce27a26
           tenant-id: 14abb5bd-36fe-407a-8b80-cc22c8ce0d49
