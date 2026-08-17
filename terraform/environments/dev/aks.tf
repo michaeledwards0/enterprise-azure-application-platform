@@ -24,6 +24,12 @@ resource "azurerm_kubernetes_cluster" "platform" {
     only_critical_addons_enabled = true
     os_disk_size_gb              = 64
     type                         = "VirtualMachineScaleSets"
+
+    upgrade_settings {
+      max_surge                     = "10%"
+      drain_timeout_in_minutes      = 0
+      node_soak_duration_in_minutes = 0
+    }
   }
 
   identity {
@@ -81,4 +87,10 @@ resource "azurerm_kubernetes_cluster_node_pool" "apps" {
       ResourcePurpose = "Application-Node-Pool"
     }
   )
+
+  upgrade_settings {
+    max_surge                     = "10%"
+    drain_timeout_in_minutes      = 0
+    node_soak_duration_in_minutes = 0
+  }
 }
