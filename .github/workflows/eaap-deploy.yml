@@ -1,0 +1,118 @@
+name: EAAP Deploy to AKS
+
+on:
+  workflow_dispatch:
+  push:
+    branches: [main]
+    paths:
+      - "app/sample-web/**"
+      - "app/k8s/**"
+      - ".github/workflows/eaap-deploy.yml"
+
+permissions:
+  contents: read
+  id-token: write
+
+env:
+  IMAGE_REPOSITORY: eaap-sample-web
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+    environment: dev
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Azure login with OIDC
+        uses: azure/login@v2
+        with:
+          client-id: ${{ secrets.AZURE_CLIENT_ID }}
+          tenant-id: ${{ secrets.AZURE_TENANT_ID }}
+          subscription-id: ${{ secrets.AZURE_SUBSCRIPTION_ID }}
+
+      - name: Capture original AKS authorized IP ranges
+        shell: bash
+        run: |
+          ORIGINAL_RANGES=$(az aks show \
+            --resource-group "${{ vars.AKS_RESOURCE_GROUP }}" \
+            --name "${{ vars.AKS_NAME }}" \
+            --query "apiServerAccessProfile.authorizedIpRanges" \
+            --output tsv | tr '\t' ',')
+
+          echo "ORIGINAL_AKS_RANGES=$ORIGINAL_RANGES" >> "$GITHUB_ENV"
+
+      - name: Temporarily allow GitHub runner to AKS API
+        shell: bash
+        run: |
+          RUNNER_IP=$(curl -fsSL https://api.ipify.org)
+          echo "Runner IP detected."
+
+          if [ -n "$ORIGINAL_AKS_RANGES" ]; then
+            NEW_RANGES="$ORIGINAL_AKS_RANGES,$RUNNER_IP/32"
+          else
+            NEW_RANGES="$RUNNER_IP/32"
+          fi
+
+          az aks update \
+            --resource-group "${{ vars.AKS_RESOURCE_GROUP }}" \
+            --name "${{ vars.AKS_NAME }}" \
+            --api-server-authorized-ip-ranges "$NEW_RANGES" \
+            --output none
+
+      - name: Login to ACR
+        run: az acr login --name "${{ vars.ACR_NAME }}"
+
+      - name: Build and push image
+        shell: bash
+        run: |
+          IMAGE_TAG="${GITHUB_SHA::12}"
+          IMAGE="${{ vars.ACR_LOGIN_SERVER }}/${IMAGE_REPOSITORY}:${IMAGE_TAG}"
+          echo "IMAGE=$IMAGE" >> "$GITHUB_ENV"
+          docker build -t "$IMAGE" ./app/sample-web
+          docker push "$IMAGE"
+
+      - name: Setup kubectl
+        uses: azure/setup-kubectl@v4
+
+      - name: Setup kubelogin
+        uses: azure/use-kubelogin@v1
+
+      - name: Connect to AKS
+        shell: bash
+        run: |
+          az aks get-credentials \
+            --resource-group "${{ vars.AKS_RESOURCE_GROUP }}" \
+            --name "${{ vars.AKS_NAME }}" \
+            --overwrite-existing
+          kubelogin convert-kubeconfig -l azurecli
+
+      - name: Prepare release manifest
+        shell: bash
+        run: |
+          cp app/k8s/platform.yaml app/k8s/platform-release.yaml
+          sed -i "s#image: .*eaap-sample-web.*#image: ${IMAGE}#" app/k8s/platform-release.yaml
+
+      - name: Deploy to AKS
+        run: kubectl apply -f app/k8s/platform-release.yaml
+
+      - name: Validate rollout
+        run: |
+          kubectl rollout status deployment/eaap-sample-web \
+            -n "${{ vars.K8S_NAMESPACE }}" \
+            --timeout=180s
+          kubectl get pods -n "${{ vars.K8S_NAMESPACE }}" -o wide
+          kubectl get service -n "${{ vars.K8S_NAMESPACE }}"
+
+      - name: Restore original AKS authorized IP ranges
+        if: always()
+        shell: bash
+        run: |
+          if [ -n "$ORIGINAL_AKS_RANGES" ]; then
+            az aks update \
+              --resource-group "${{ vars.AKS_RESOURCE_GROUP }}" \
+              --name "${{ vars.AKS_NAME }}" \
+              --api-server-authorized-ip-ranges "$ORIGINAL_AKS_RANGES" \
+              --output none
+          fi

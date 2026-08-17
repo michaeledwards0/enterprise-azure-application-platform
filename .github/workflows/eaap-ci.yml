@@ -1,0 +1,42 @@
+name: EAAP CI Validation
+
+on:
+  pull_request:
+    paths:
+      - "terraform/**"
+      - "app/**"
+      - ".github/workflows/eaap-ci.yml"
+  push:
+    branches: [main]
+    paths:
+      - "terraform/**"
+      - "app/**"
+      - ".github/workflows/eaap-ci.yml"
+
+permissions:
+  contents: read
+
+jobs:
+  validate:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Setup Terraform
+        uses: hashicorp/setup-terraform@v3
+
+      - name: Terraform format check
+        run: terraform fmt -check -recursive
+
+      - name: Terraform init without remote backend
+        working-directory: terraform/environments/dev
+        run: terraform init -backend=false
+
+      - name: Terraform validate
+        working-directory: terraform/environments/dev
+        run: terraform validate
+
+      - name: Validate Docker build
+        run: docker build -t eaap-sample-web:ci ./app/sample-web
