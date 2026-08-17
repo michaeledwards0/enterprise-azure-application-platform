@@ -28,9 +28,9 @@ jobs:
       - name: Azure login with OIDC
         uses: azure/login@v2
         with:
-          client-id: ${{ secrets.AZURE_CLIENT_ID }}
-          tenant-id: ${{ secrets.AZURE_TENANT_ID }}
-          subscription-id: ${{ secrets.AZURE_SUBSCRIPTION_ID }}
+          client-id: 6d2a65d4-e45f-44b2-821f-7508ce27a26
+          tenant-id: 14abb5bd-36fe-407a-8b80-cc22c8ce0d49
+          subscription-id: 565b4a05-b64e-48fa-b70b-30eb2545a67b
 
       - name: Capture original AKS authorized IP ranges
         shell: bash
