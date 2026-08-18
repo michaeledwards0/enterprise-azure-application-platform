@@ -38,6 +38,35 @@ jobs:
          echo "Repository ID: $GITHUB_REPOSITORY_ID"
          echo "Repository owner ID: $GITHUB_REPOSITORY_OWNER_ID"
 
+      - name: Inspect GitHub OIDC claims
+        shell: bash
+        run: |
+        RESPONSE=$(curl -sS \
+        -H "Authorization: bearer $ACTIONS_ID_TOKEN_REQUEST_TOKEN" \
+        "${ACTIONS_ID_TOKEN_REQUEST_URL}&audience=api://AzureADTokenExchange")
+
+        TOKEN=$(echo "$RESPONSE" | jq -r '.value')
+
+        PAYLOAD=$(echo "$TOKEN" | cut -d '.' -f2)
+        PAD=$(( (4 - ${#PAYLOAD} % 4) % 4 ))
+        PAYLOAD="${PAYLOAD}$(printf '=%.0s' $(seq 1 $PAD))"
+
+        echo "$PAYLOAD" \
+         | tr '_-' '/+' \
+         | base64 -d 2>/dev/null \
+         | jq '{
+        iss,
+        sub,
+        aud,
+        repository,
+        repository_id,
+        repository_owner,
+        repository_owner_id,
+        environment,
+        ref,
+        job_workflow_ref
+        }'
+
       - name: Azure login with OIDC
         uses: azure/login@v3
         with:
