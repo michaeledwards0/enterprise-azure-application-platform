@@ -81,9 +81,39 @@ jobs:
             --resource-group "${{ vars.AKS_RESOURCE_GROUP }}" \
             --name "${{ vars.AKS_NAME }}" \
             --query "apiServerAccessProfile.authorizedIpRanges" \
-            --output tsv | tr '\t' ',')
+            --output json | jq -r '(. // []) | join(",")')
+
+          echo "Original AKS ranges: $ORIGINAL_RANGES"
 
           echo "ORIGINAL_AKS_RANGES=$ORIGINAL_RANGES" >> "$GITHUB_ENV"
+          echo "AKS_RANGES_CAPTURED=true" >> "$GITHUB_ENV"
+
+      - name: Wait for AKS to be ready
+        shell: bash
+        run: |
+          for attempt in {1..60}; do
+            STATE=$(az aks show \
+              --resource-group "${{ vars.AKS_RESOURCE_GROUP }}" \
+              --name "${{ vars.AKS_NAME }}" \
+              --query provisioningState \
+              --output tsv)
+
+            echo "AKS provisioning state: $STATE"
+
+            if [ "$STATE" = "Succeeded" ]; then
+              exit 0
+            fi
+
+            if [ "$STATE" = "Failed" ] || [ "$STATE" = "Canceled" ]; then
+              echo "AKS entered state: $STATE"
+              exit 1
+            fi
+
+            sleep 15
+          done
+
+          echo "Timed out waiting for AKS."
+          exit 1
 
       - name: Temporarily allow GitHub runner to AKS API
         shell: bash
@@ -171,10 +201,33 @@ jobs:
         if: always()
         shell: bash
         run: |
-          if [ -n "$ORIGINAL_AKS_RANGES" ]; then
-            az aks update \
+          if [ "${AKS_RANGES_CAPTURED:-false}" != "true" ]; then
+            echo "Original ranges were not captured. Skipping restore."
+            exit 0
+          fi
+
+          echo "Waiting for any existing AKS operation to finish..."
+
+          for attempt in {1..60}; do
+            STATE=$(az aks show \
               --resource-group "${{ vars.AKS_RESOURCE_GROUP }}" \
               --name "${{ vars.AKS_NAME }}" \
-              --api-server-authorized-ip-ranges "$ORIGINAL_AKS_RANGES" \
-              --output none
-          fi
+              --query provisioningState \
+              --output tsv)
+
+            echo "AKS provisioning state: $STATE"
+
+            if [ "$STATE" = "Succeeded" ]; then
+              break
+            fi
+
+            sleep 15
+          done
+
+          echo "Restoring original AKS API authorized IP ranges."
+
+          az aks update \
+            --resource-group "${{ vars.AKS_RESOURCE_GROUP }}" \
+            --name "${{ vars.AKS_NAME }}" \
+            --api-server-authorized-ip-ranges "$ORIGINAL_AKS_RANGES" \
+            --output none
