@@ -1,0 +1,60 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: eaap-sample-web
+  namespace: eaap-app
+spec:
+  replicas: 2
+  selector:
+    matchLabels:
+      app: eaap-sample-web
+  template:
+    metadata:
+      labels:
+        app: eaap-sample-web
+        azure.workload.identity/use: "true"
+    spec:
+      serviceAccountName: eaap-workload-sa
+      nodeSelector:
+        workload: applications
+      containers:
+        - name: eaap-sample-web
+          image: acreaapdev5803.azurecr.io/eaap-sample-web:v1
+          ports:
+            - containerPort: 80
+          readinessProbe:
+            httpGet:
+              path: /
+              port: 80
+            initialDelaySeconds: 5
+            periodSeconds: 10
+          volumeMounts:
+            - name: secrets-store
+              mountPath: /mnt/secrets-store
+              readOnly: true
+      volumes:
+        - name: secrets-store
+          csi:
+            driver: secrets-store.csi.k8s.io
+            readOnly: true
+            volumeAttributes:
+              secretProviderClass: eaap-key-vault-secrets
+
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: eaap-sample-web
+  namespace: eaap-app
+  annotations:
+    service.beta.kubernetes.io/azure-load-balancer-internal: "true"
+    service.beta.kubernetes.io/azure-load-balancer-internal-subnet: "snet-ingress-dev-scus-001"
+spec:
+  type: LoadBalancer
+  loadBalancerIP: 10.20.1.10
+  selector:
+    app: eaap-sample-web
+  ports:
+    - port: 80
+      targetPort: 80
+      protocol: TCP

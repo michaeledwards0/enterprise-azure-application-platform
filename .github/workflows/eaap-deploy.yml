@@ -172,15 +172,15 @@ jobs:
       - name: Prepare release manifest
         shell: bash
         run: |
-          cp app/k8s/platform.yaml app/k8s/platform-release.yaml
+        cp app/k8s/app-release.yaml app/k8s/app-release-rendered.yaml
 
-          sed -i \
-            "s#image: .*eaap-sample-web.*#image: ${IMAGE}#" \
-            app/k8s/platform-release.yaml
+        sed -i \
+        "s#image: .*eaap-sample-web.*#image: ${IMAGE}#" \
+         app/k8s/app-release-rendered.yaml
 
       - name: Deploy to AKS
         run: |
-          kubectl apply -f app/k8s/platform-release.yaml
+         kubectl apply -f app/k8s/app-release-rendered.yaml
 
       - name: Validate rollout
         shell: bash
