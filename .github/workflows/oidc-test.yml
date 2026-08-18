@@ -1,0 +1,26 @@
+name: EAAP OIDC Test
+
+on:
+  workflow_dispatch:
+
+permissions:
+  contents: read
+  id-token: write
+
+jobs:
+  test:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Azure login with OIDC
+        uses: azure/login@v3
+        with:
+          client-id: 95cf53ac-c82f-402e-8d63-e40f6be20284
+          tenant-id: 14abb5bd-36fe-407a-8b80-cc22c8ce0d49
+          subscription-id: 565b4a05-b64e-48fa-b70b-30eb2545a67b
+
+      - name: Verify Azure login
+        run: |
+          az account show \
+            --query "{subscription:name,tenantId:tenantId}" \
+            --output table
