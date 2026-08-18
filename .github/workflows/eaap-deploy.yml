@@ -32,6 +32,12 @@ jobs:
         env:
           AZURE_CLIENT_ID: ${{ secrets.AZURE_CLIENT_ID }}
 
+      - name: Show GitHub immutable IDs
+        shell: bash
+        run: |
+         echo "Repository ID: $GITHUB_REPOSITORY_ID"
+         echo "Repository owner ID: $GITHUB_REPOSITORY_OWNER_ID"
+
       - name: Azure login with OIDC
         uses: azure/login@v3
         with:
