@@ -3,7 +3,8 @@ name: EAAP Deploy to AKS
 on:
   workflow_dispatch:
   push:
-    branches: [main]
+    branches:
+      - main
     paths:
       - "app/sample-web/**"
       - "app/k8s/**"
@@ -27,52 +28,52 @@ jobs:
 
       - name: Debug Azure client ID
         shell: bash
-        run: |
-          echo "Client ID prefix: ${AZURE_CLIENT_ID:0:8}"
         env:
           AZURE_CLIENT_ID: ${{ secrets.AZURE_CLIENT_ID }}
+        run: |
+          echo "Client ID prefix: ${AZURE_CLIENT_ID:0:8}"
 
       - name: Show GitHub immutable IDs
         shell: bash
         run: |
-         echo "Repository ID: $GITHUB_REPOSITORY_ID"
-         echo "Repository owner ID: $GITHUB_REPOSITORY_OWNER_ID"
+          echo "Repository ID: $GITHUB_REPOSITORY_ID"
+          echo "Repository owner ID: $GITHUB_REPOSITORY_OWNER_ID"
 
       - name: Inspect GitHub OIDC claims
         shell: bash
         run: |
-        RESPONSE=$(curl -sS \
-        -H "Authorization: bearer $ACTIONS_ID_TOKEN_REQUEST_TOKEN" \
-        "${ACTIONS_ID_TOKEN_REQUEST_URL}&audience=api://AzureADTokenExchange")
+          RESPONSE=$(curl -sS \
+            -H "Authorization: bearer $ACTIONS_ID_TOKEN_REQUEST_TOKEN" \
+            "${ACTIONS_ID_TOKEN_REQUEST_URL}&audience=api://AzureADTokenExchange")
 
-        TOKEN=$(echo "$RESPONSE" | jq -r '.value')
+          TOKEN=$(echo "$RESPONSE" | jq -r '.value')
 
-        PAYLOAD=$(echo "$TOKEN" | cut -d '.' -f2)
-        PAD=$(( (4 - ${#PAYLOAD} % 4) % 4 ))
-        PAYLOAD="${PAYLOAD}$(printf '=%.0s' $(seq 1 $PAD))"
+          PAYLOAD=$(echo "$TOKEN" | cut -d '.' -f2)
+          PAD=$(( (4 - ${#PAYLOAD} % 4) % 4 ))
+          PAYLOAD="${PAYLOAD}$(printf '=%.0s' $(seq 1 $PAD))"
 
-        echo "$PAYLOAD" \
-         | tr '_-' '/+' \
-         | base64 -d 2>/dev/null \
-         | jq '{
-        iss,
-        sub,
-        aud,
-        repository,
-        repository_id,
-        repository_owner,
-        repository_owner_id,
-        environment,
-        ref,
-        job_workflow_ref
-        }'
+          echo "$PAYLOAD" \
+            | tr '_-' '/+' \
+            | base64 -d 2>/dev/null \
+            | jq '{
+                iss,
+                sub,
+                aud,
+                repository,
+                repository_id,
+                repository_owner,
+                repository_owner_id,
+                environment,
+                ref,
+                job_workflow_ref
+              }'
 
       - name: Azure login with OIDC
         uses: azure/login@v3
         with:
-             client-id: ${{ secrets.AZURE_CLIENT_ID }}
-             tenant-id: ${{ secrets.AZURE_TENANT_ID }}
-             subscription-id: ${{ secrets.AZURE_SUBSCRIPTION_ID }}
+          client-id: ${{ secrets.AZURE_CLIENT_ID }}
+          tenant-id: ${{ secrets.AZURE_TENANT_ID }}
+          subscription-id: ${{ secrets.AZURE_SUBSCRIPTION_ID }}
 
       - name: Capture original AKS authorized IP ranges
         shell: bash
@@ -104,15 +105,21 @@ jobs:
             --output none
 
       - name: Login to ACR
-        run: az acr login --name "${{ vars.ACR_NAME }}"
+        run: |
+          az acr login --name "${{ vars.ACR_NAME }}"
 
       - name: Build and push image
         shell: bash
         run: |
           IMAGE_TAG="${GITHUB_SHA::12}"
           IMAGE="${{ vars.ACR_LOGIN_SERVER }}/${IMAGE_REPOSITORY}:${IMAGE_TAG}"
+
           echo "IMAGE=$IMAGE" >> "$GITHUB_ENV"
-          docker build -t "$IMAGE" ./app/sample-web
+
+          docker build \
+            -t "$IMAGE" \
+            ./app/sample-web
+
           docker push "$IMAGE"
 
       - name: Setup kubectl
@@ -128,24 +135,36 @@ jobs:
             --resource-group "${{ vars.AKS_RESOURCE_GROUP }}" \
             --name "${{ vars.AKS_NAME }}" \
             --overwrite-existing
+
           kubelogin convert-kubeconfig -l azurecli
 
       - name: Prepare release manifest
         shell: bash
         run: |
           cp app/k8s/platform.yaml app/k8s/platform-release.yaml
-          sed -i "s#image: .*eaap-sample-web.*#image: ${IMAGE}#" app/k8s/platform-release.yaml
+
+          sed -i \
+            "s#image: .*eaap-sample-web.*#image: ${IMAGE}#" \
+            app/k8s/platform-release.yaml
 
       - name: Deploy to AKS
-        run: kubectl apply -f app/k8s/platform-release.yaml
+        run: |
+          kubectl apply -f app/k8s/platform-release.yaml
 
       - name: Validate rollout
+        shell: bash
         run: |
-          kubectl rollout status deployment/eaap-sample-web \
+          kubectl rollout status \
+            deployment/eaap-sample-web \
             -n "${{ vars.K8S_NAMESPACE }}" \
             --timeout=180s
-          kubectl get pods -n "${{ vars.K8S_NAMESPACE }}" -o wide
-          kubectl get service -n "${{ vars.K8S_NAMESPACE }}"
+
+          kubectl get pods \
+            -n "${{ vars.K8S_NAMESPACE }}" \
+            -o wide
+
+          kubectl get service \
+            -n "${{ vars.K8S_NAMESPACE }}"
 
       - name: Restore original AKS authorized IP ranges
         if: always()
