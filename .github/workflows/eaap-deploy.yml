@@ -20,52 +20,10 @@ env:
 jobs:
   deploy:
     runs-on: ubuntu-latest
-  
+
     steps:
       - name: Checkout repository
         uses: actions/checkout@v4
-
-      - name: Debug Azure client ID
-        shell: bash
-        env:
-          AZURE_CLIENT_ID: ${{ secrets.AZURE_CLIENT_ID }}
-        run: |
-          echo "Client ID prefix: ${AZURE_CLIENT_ID:0:8}"
-
-      - name: Show GitHub immutable IDs
-        shell: bash
-        run: |
-          echo "Repository ID: $GITHUB_REPOSITORY_ID"
-          echo "Repository owner ID: $GITHUB_REPOSITORY_OWNER_ID"
-
-      - name: Inspect GitHub OIDC claims
-        shell: bash
-        run: |
-          RESPONSE=$(curl -sS \
-            -H "Authorization: bearer $ACTIONS_ID_TOKEN_REQUEST_TOKEN" \
-            "${ACTIONS_ID_TOKEN_REQUEST_URL}&audience=api://AzureADTokenExchange")
-
-          TOKEN=$(echo "$RESPONSE" | jq -r '.value')
-
-          PAYLOAD=$(echo "$TOKEN" | cut -d '.' -f2)
-          PAD=$(( (4 - ${#PAYLOAD} % 4) % 4 ))
-          PAYLOAD="${PAYLOAD}$(printf '=%.0s' $(seq 1 $PAD))"
-
-          echo "$PAYLOAD" \
-            | tr '_-' '/+' \
-            | base64 -d 2>/dev/null \
-            | jq '{
-                iss,
-                sub,
-                aud,
-                repository,
-                repository_id,
-                repository_owner,
-                repository_owner_id,
-                environment,
-                ref,
-                job_workflow_ref
-              }'
 
       - name: Azure login with OIDC
         uses: azure/login@v3
@@ -84,7 +42,6 @@ jobs:
             --output json | jq -r '(. // []) | join(",")')
 
           echo "Original AKS ranges: $ORIGINAL_RANGES"
-
           echo "ORIGINAL_AKS_RANGES=$ORIGINAL_RANGES" >> "$GITHUB_ENV"
           echo "AKS_RANGES_CAPTURED=true" >> "$GITHUB_ENV"
 
@@ -172,15 +129,15 @@ jobs:
       - name: Prepare release manifest
         shell: bash
         run: |
-        cp app/k8s/app-release.yaml app/k8s/app-release-rendered.yaml
+          cp app/k8s/app-release.yaml app/k8s/app-release-rendered.yaml
 
-        sed -i \
-        "s#image: .*eaap-sample-web.*#image: ${IMAGE}#" \
-         app/k8s/app-release-rendered.yaml
+          sed -i \
+            "s#image: .*eaap-sample-web.*#image: ${IMAGE}#" \
+            app/k8s/app-release-rendered.yaml
 
       - name: Deploy to AKS
         run: |
-         kubectl apply -f app/k8s/app-release-rendered.yaml
+          kubectl apply -f app/k8s/app-release-rendered.yaml
 
       - name: Validate rollout
         shell: bash
@@ -206,7 +163,7 @@ jobs:
             exit 0
           fi
 
-          echo "Waiting for any existing AKS operation to finish..."
+          echo "Waiting for AKS to become idle before restoring ranges."
 
           for attempt in {1..60}; do
             STATE=$(az aks show \
