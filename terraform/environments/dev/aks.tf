@@ -57,6 +57,11 @@ resource "azurerm_kubernetes_cluster" "platform" {
     secret_rotation_interval = "2m"
   }
 
+  oms_agent {
+    log_analytics_workspace_id      = azurerm_log_analytics_workspace.platform.id
+    msi_auth_for_monitoring_enabled = true
+  }
+
   tags = merge(
     local.common_tags,
     {
