@@ -1,4 +1,4 @@
-variable "github_repository" {
-  description = "GitHub repository allowed to federate with the EAAP GitHub Actions managed identity."
+variable "github_oidc_subject" {
+  description = "Immutable GitHub OIDC subject trusted by the EAAP deployment identity."
   type        = string
 }
