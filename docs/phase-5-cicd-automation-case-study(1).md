@@ -391,16 +391,15 @@ there's an in-progress update managed cluster operation
 
 | Evidence | What It Proves | Screenshot |
 |---|---|---|
-| Entra CI/CD application | Dedicated GitHub automation application exists | `../../screenshots/phase-5/01-github-actions-identity.png` |
-| OIDC federation | Branch-scoped GitHub trust is configured | `../../screenshots/phase-5/02-federated-credential.png` |
-| Scoped RBAC | ACR, AKS, namespace, and subnet roles are assigned | `../../screenshots/phase-5/03-cicd-rbac.png` |
-| CI workflow | Terraform and Docker validation pass | `../../screenshots/phase-5/04-ci-workflow.png` |
-| CD workflow | Full GitHub-to-AKS workflow succeeds | `../../screenshots/phase-5/05-cd-workflow.png` |
-| ACR image | Git SHA image exists in ACR | `../../screenshots/phase-5/06-acr-sha-image.png` |
-| AKS rollout | Deployment completes successfully | `../../screenshots/phase-5/07-aks-rollout.png` |
-| Running pods | Updated replicas are Ready | `../../screenshots/phase-5/08-running-pods.png` |
-| API allowlist restored | Temporary runner IP was removed | `../../screenshots/phase-5/09-api-allowlist-restored.png` |
-| Clean plan | Terraform and Entra identity state are reconciled | `../../screenshots/phase-5/10-clean-plan.png` |
+| Entra CI/CD application | Dedicated GitHub automation application exists | <img width="1039" height="144" alt="image" src="https://github.com/user-attachments/assets/e32550f0-c70d-4fc6-b79d-c38852752a26" /> |
+| OIDC federation | Branch-scoped GitHub trust is configured | <img width="1358" height="280" alt="image" src="https://github.com/user-attachments/assets/ff7f90aa-3b42-4d09-9e40-357f73c89f60" /> |
+| Scoped RBAC | ACR, AKS, namespace, and subnet roles are assigned | <img width="1217" height="402" alt="image" src="https://github.com/user-attachments/assets/6de4f61f-9527-408a-855a-31fcf85e9833" /> |
+| CI workflow | Terraform and Docker validation pass | <img width="1522" height="339" alt="image" src="https://github.com/user-attachments/assets/089fe00b-5341-421d-a126-3921993d3307" /> |
+| CD workflow | Full GitHub-to-AKS workflow succeeds | <img width="1513" height="380" alt="image" src="https://github.com/user-attachments/assets/2cf53817-73ab-41d8-9bd8-904b3b4601e0" /> |
+| ACR image | Git SHA image exists in ACR | <img width="993" height="359" alt="image" src="https://github.com/user-attachments/assets/c33325aa-4751-4757-b932-da23ff3f3659" /> |
+| AKS rollout | Deployment completes successfully | <img width="1225" height="72" alt="image" src="https://github.com/user-attachments/assets/95f1e189-8f4f-4f48-a784-49969110fbc8" /> |
+| Running pods | Updated replicas are Ready | <img width="1168" height="235" alt="image" src="https://github.com/user-attachments/assets/a860e8d3-96f3-40b4-b391-32f3b6d7c8c9" /> |
+| API allowlist restored | Temporary runner IP was removed |<img width="888" height="195" alt="image" src="https://github.com/user-attachments/assets/859850dd-6b6e-4a5b-8ae3-fb4216f8c170" /> |
 
 ---
 
