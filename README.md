@@ -163,8 +163,8 @@ These automations use Azure SDK authentication through `DefaultAzureCredential`,
 | [**1**](docs/phase-1-landing-zone/README.md) | [**Enterprise Landing Zone**](docs/phase-1-landing-zone/README.md) | Terraform backend, naming, tagging, resource organization, Python governance automation | Complete |
 | [**2**](docs/phase-2-enterprise-networking/README.md) | [**Enterprise Networking**](docs/phase-2-enterprise-networking/README.md) | Hub-and-spoke VNets, subnets, NSGs, routing, private DNS | Complete |
 | [**3**](docs/phase-3-identity-secrets-case-study.md) |[**Identity Secrets**](docs/phase-3-identity-secrets-case-study.md)| Managed identity, Azure RBAC, Key Vault, secret delivery | Complete |
-| [**4**](docs/phase-4-container-platform-case-study.md) | [**Container Platform**](docs/phase-4-container-platform-case-study.md) | Docker, ACR, AKS, node pools, ingress | Planned |
-| **5** | CI/CD Automation | GitHub Actions, OIDC federation, Terraform workflow, application delivery | Planned |
+| [**4**](docs/phase-4-container-platform-case-study.md) | [**Container Platform**](docs/phase-4-container-platform-case-study.md) | Docker, ACR, AKS, node pools, ingress | Complete |
+| [**5**] (docs/phase-5-cicd-automation-case-study(1).md) | [**CI/CD Automation**](docs/phase-5-cicd-automation-case-study(1).md) | GitHub Actions, OIDC federation, Terraform workflow, application delivery | Complete |
 | **6** | Observability | Azure Monitor, Log Analytics, Application Insights, Python health reporting | Planned |
 | **7** | Reliability and Recovery | Autoscaling, backup, restore, resiliency testing | Planned |
 | **8** | Platform Security | Defender for Cloud, Azure Policy, image and configuration security | Planned |
