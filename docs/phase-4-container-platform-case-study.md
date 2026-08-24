@@ -222,16 +222,16 @@ The federated credential cannot be completed until the cluster exposes its issue
 
 | Evidence | What It Proves | Screenshot |
 |---|---|---|
-| ACR overview | Registry exists with expected settings | `../../screenshots/phase-4/01-acr-overview.png` |
-| ACR repository | Sample image was pushed | `../../screenshots/phase-4/02-acr-image.png` |
-| AKS overview | Cluster deployed successfully | `../../screenshots/phase-4/03-aks-overview.png` |
-| Node pools | System and user pools exist | `../../screenshots/phase-4/04-node-pools.png` |
-| Authorized IP ranges | API server access is restricted | `../../screenshots/phase-4/05-api-authorized-ip.png` |
-| Workload identity | OIDC and federation are configured | `../../screenshots/phase-4/06-workload-identity.png` |
-| Key Vault CSI | SecretProviderClass and mounted secret validated | `../../screenshots/phase-4/07-key-vault-secret-mount.png` |
-| Running workload | Two application pods are Ready | `../../screenshots/phase-4/08-running-pods.png` |
-| Private service IP | Service uses an ingress-subnet private IP | `../../screenshots/phase-4/09-private-service-ip.png` |
-| Clean plan | Terraform and Azure remain synchronized | `../../screenshots/phase-4/10-clean-plan.png` |
+| ACR overview | Registry exists with expected settings | <img width="1012" height="404" alt="image" src="https://github.com/user-attachments/assets/8dbfa6ab-dd2d-4f31-b93a-38504834de02" /> |
+| ACR repository | Sample image was pushed | <img width="922" height="232" alt="image" src="https://github.com/user-attachments/assets/5caf0313-9a38-499d-96fd-15476b00d4cd" /> |
+| AKS overview | Cluster deployed successfully | <img width="1016" height="217" alt="image" src="https://github.com/user-attachments/assets/daab32d4-e4aa-4f73-80fa-21bbe1bbccb3" /> |
+| Node pools | System and user pools exist | <img width="1200" height="384" alt="image" src="https://github.com/user-attachments/assets/79a7b32d-67ac-42ad-826f-1dbb86ebabe5" /> |
+| Authorized IP ranges | API server access is restricted | <img width="916" height="349" alt="image" src="https://github.com/user-attachments/assets/465d1568-8324-46f0-be5c-e327ce9a984f" /> |
+| Workload identity | OIDC and federation are configured | <img width="1229" height="540" alt="image" src="https://github.com/user-attachments/assets/6fc4419b-bc6f-4384-abb3-7996f2f0b36c" /> |
+| Key Vault CSI | SecretProviderClass and mounted secret validated | <img width="929" height="389" alt="image" src="https://github.com/user-attachments/assets/5ff85680-421b-4812-a1e1-a3fc13278075" /> |
+| Running workload | Two application pods are Ready | <img width="1171" height="312" alt="image" src="https://github.com/user-attachments/assets/d2c763d2-bc18-4626-8591-835e37ae0ef6" /> |
+| Private service IP | Service uses an ingress-subnet private IP | <img width="911" height="219" alt="image" src="https://github.com/user-attachments/assets/ebe03c21-9879-4340-967f-8847d5f9b563" /> |
+| Clean plan | Terraform and Azure remain synchronized | <img width="1141" height="137" alt="image" src="https://github.com/user-attachments/assets/6210578d-6b51-44d1-a3d1-9481d6eed9f7" /> |
 
 ---
 
