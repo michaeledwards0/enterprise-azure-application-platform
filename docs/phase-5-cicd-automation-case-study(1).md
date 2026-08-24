@@ -393,7 +393,7 @@ there's an in-progress update managed cluster operation
 |---|---|---|
 | Entra CI/CD application | Dedicated GitHub automation application exists | <img width="1039" height="144" alt="image" src="https://github.com/user-attachments/assets/e32550f0-c70d-4fc6-b79d-c38852752a26" /> |
 | OIDC federation | Branch-scoped GitHub trust is configured | <img width="1358" height="280" alt="image" src="https://github.com/user-attachments/assets/ff7f90aa-3b42-4d09-9e40-357f73c89f60" /> |
-| Scoped RBAC | ACR, AKS, namespace, and subnet roles are assigned | <img width="1217" height="402" alt="image" src="https://github.com/user-attachments/assets/6de4f61f-9527-408a-855a-31fcf85e9833" /> |
+| Scoped RBAC | ACR, AKS, namespace, and subnet roles are assigned | <img width="1260" height="504" alt="image" src="https://github.com/user-attachments/assets/a5e901b5-d989-4b47-b834-0540af5c26ff" /> |
 | CI workflow | Terraform and Docker validation pass | <img width="1522" height="339" alt="image" src="https://github.com/user-attachments/assets/089fe00b-5341-421d-a126-3921993d3307" /> |
 | CD workflow | Full GitHub-to-AKS workflow succeeds | <img width="1513" height="380" alt="image" src="https://github.com/user-attachments/assets/2cf53817-73ab-41d8-9bd8-904b3b4601e0" /> |
 | ACR image | Git SHA image exists in ACR | <img width="993" height="359" alt="image" src="https://github.com/user-attachments/assets/c33325aa-4751-4757-b932-da23ff3f3659" /> |
