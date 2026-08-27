@@ -61,30 +61,6 @@ The existing environment relies on manual deployments, inconsistent naming and t
 
 <img width="869" height="649" alt="image" src="https://github.com/user-attachments/assets/ccc77f73-904b-4b52-b054-d9a7113c56cf" />
 
-```mermaid
-flowchart TB
-    Dev[Developer] --> Repo[GitHub Repository]
-    Repo --> Actions[GitHub Actions CI/CD]
-    Actions --> TF[Terraform]
-    Actions --> AppDeploy[Container Delivery]
-
-    TF --> Azure[Azure Platform]
-    Azure --> Hub[Hub VNet]
-    Hub --> Spoke[Application Spoke VNet]
-    Spoke --> AppGW[Application Gateway / Ingress]
-    AppGW --> AKS[Azure Kubernetes Service]
-    AKS --> ACR[Azure Container Registry]
-    AKS --> KV[Azure Key Vault]
-
-    Monitor[Azure Monitor and Log Analytics] --> AKS
-    Policy[Azure Policy] --> Azure
-    Defender[Defender for Cloud] --> Azure
-    Recovery[Backup and Recovery] --> Azure
-
-    Python[Python Operations Automation] --> Graph[Azure Resource Graph]
-    Python --> Monitor
-    Python --> Cost[Cost and Governance Reports]
-```
 
 ---
 
