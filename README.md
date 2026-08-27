@@ -57,49 +57,9 @@ The existing environment relies on manual deployments, inconsistent naming and t
 
 ---
 
-## Tenant and Subscription Strategy & Tradeoffs
-
-Both flagship portfolio projects are deployed in the same Microsoft Entra tenant and the same Azure subscription.
-
-A subscription can belong to only one management-group branch at a time, so the projects are not placed under separate management groups. Separation is enforced inside the shared subscription through dedicated resource groups, project-specific naming and tags, separate Terraform state, separate identities, and independent security and monitoring resources.
-
-```mermaid
-flowchart TB
-    Tenant[Microsoft Entra Tenant]
-    Tenant --> PortfolioMG[Management Group: Portfolio Lab]
-    PortfolioMG --> SharedSub[Shared Azure Subscription]
-
-    SharedSub --> AIProject[Enterprise Azure AI Infrastructure]
-    SharedSub --> AppProject[Enterprise Azure Application Platform]
-
-    AIProject --> AIRGs[Dedicated AI resource groups]
-    AIProject --> AIControls[AI-specific Policy, RBAC, Key Vault, monitoring]
-
-    AppProject --> AppRGs[Dedicated EAAP resource groups]
-    AppProject --> AppState[Separate Terraform backend and state key]
-    AppProject --> AppControls[EAAP-specific identities, Key Vault, monitoring]
-```
-
-### Implemented Shared-Subscription Design
-
-- One Microsoft Entra tenant
-- One management-group path for the shared subscription
-- One Azure subscription hosting both portfolio projects
-- Dedicated resource groups for each project
-- Separate Terraform state and backend configuration
-- Project-specific naming conventions and tags
-- Separate Key Vaults, identities, budgets, and monitoring resources where applicable
-- Azure Policy evaluated at management-group, subscription, and resource-group scopes
-
-### Production-Scale Alternative
-
-In a larger enterprise, the preferred design would normally use separate subscriptions for strong billing, quota, RBAC, policy, and lifecycle isolation. The shared-subscription model is appropriate for this portfolio environment because project boundaries are still enforced through resource groups, state separation, identities, tags, and governance controls.
-
-A separate Entra tenant is unnecessary unless the design intentionally demonstrates cross-tenant administration, Azure Lighthouse, B2B collaboration, or hard tenant isolation.
-
----
-
 ## Target Architecture
+
+<img width="869" height="649" alt="image" src="https://github.com/user-attachments/assets/ccc77f73-904b-4b52-b054-d9a7113c56cf" />
 
 ```mermaid
 flowchart TB
