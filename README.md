@@ -100,7 +100,7 @@ These automations use Azure SDK authentication through `DefaultAzureCredential`,
 | [**2**](docs/phase-2-enterprise-networking/README.md) | [**Enterprise Networking**](docs/phase-2-enterprise-networking/README.md) | Hub-and-spoke VNets, subnets, NSGs, routing, private DNS | Complete |
 | [**3**](docs/phase-3-identity-secrets-case-study.md) |[**Identity Secrets**](docs/phase-3-identity-secrets-case-study.md)| Managed identity, Azure RBAC, Key Vault, secret delivery | Complete |
 | [**4**](docs/phase-4-container-platform-case-study.md) | [**Container Platform**](docs/phase-4-container-platform-case-study.md) | Docker, ACR, AKS, node pools, ingress | Complete |
-| [**5**](docs/phase-5-cicd-automation-case-study(1).md) | [**CI/CD Automation**](docs/phase-5-cicd-automation-case-study(1).md) | GitHub Actions, OIDC federation, Terraform workflow, application delivery | Complete |
+| [**5**](docs/phase-5-cicd-automation-case-study.md) | [**CI/CD Automation**](docs/phase-5-cicd-automation-case-study.md) | GitHub Actions, OIDC federation, Terraform workflow, application delivery | Complete |
 | [**6**](docs/phase-6-observability-operations-case-study.md) | [**Observability**](docs/phase-6-observability-operations-case-study.md) | Azure Monitor, Log Analytics, Application Insights, Python health reporting | Complete |
 | **7** | Reliability and Recovery | Autoscaling, backup, restore, resiliency testing | Planned |
 | **8** | Platform Security | Defender for Cloud, Azure Policy, image and configuration security | Planned |
