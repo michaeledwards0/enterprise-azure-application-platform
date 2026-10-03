@@ -44,3 +44,11 @@ automation/**/reports/*.md
 .idea/
 .DS_Store
 Thumbs.db
+
+.venv/
+__pycache__/
+*.py[cod]
+
+reports/*.json
+reports/*.md
+!reports/.gitkeep
